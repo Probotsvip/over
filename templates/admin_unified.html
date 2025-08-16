@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube API Pro Admin Panel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --dark-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            --success-gradient: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+            --warning-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --info-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        
+        body {
+            background: var(--dark-gradient);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #fff;
+            min-height: 100vh;
+        }
+        
+        .admin-header {
+            background: var(--primary-gradient);
+            padding: 2rem 0;
+            text-align: center;
+            margin-bottom: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        .metric-card {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+        }
+        
+        .metric-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 0.5rem 0;
+        }
+        
+        .metric-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .chart-container {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            min-height: 400px;
+        }
+        
+        .data-container {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        .log-entry, .key-entry {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .nav-tabs {
+            border: none;
+            margin-bottom: 2rem;
+        }
+        
+        .nav-tabs .nav-link {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #fff;
+            border-radius: 10px 10px 0 0;
+            margin-right: 0.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-tabs .nav-link.active {
+            background: var(--primary-gradient);
+            border-color: rgba(102, 126, 234, 0.5);
+            color: #fff;
+        }
+        
+        .nav-tabs .nav-link:hover {
+            background: rgba(255,255,255,0.15);
+            border-color: rgba(255,255,255,0.3);
+        }
+        
+        .btn-gradient {
+            background: var(--primary-gradient);
+            border: none;
+            border-radius: 25px;
+            padding: 0.7rem 2rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            color: #fff;
+        }
+        
+        .btn-gradient:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+            color: #fff;
+        }
+        
+        .form-control {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #fff;
+            border-radius: 8px;
+        }
+        
+        .form-control:focus {
+            background: rgba(255,255,255,0.15);
+            border-color: #667eea;
+            color: #fff;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        
+        .form-control::placeholder {
+            color: rgba(255,255,255,0.6);
+        }
+        
+        .table-dark {
+            background: transparent;
+        }
+        
+        .table-dark td, .table-dark th {
+            border-color: rgba(255,255,255,0.1);
+        }
+        
+        .auto-refresh {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 25px;
+            padding: 0.5rem 1rem;
+            color: #fff;
+            font-size: 0.8rem;
+            z-index: 1000;
+        }
+        
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 0.5rem;
+        }
+        
+        .status-active { background: #56ab2f; }
+        .status-inactive { background: #f5576c; }
+        .status-warning { background: #f093fb; }
+        
+        .alert {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 10px;
+            color: #fff;
+        }
+        
+        .alert-success {
+            border-color: rgba(86, 171, 47, 0.5);
+            background: rgba(86, 171, 47, 0.1);
+        }
+        
+        .alert-danger {
+            border-color: rgba(245, 87, 108, 0.5);
+            background: rgba(245, 87, 108, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <!-- Auto-refresh indicator -->
+        <div class="auto-refresh" id="refreshIndicator">
+            <i class="fas fa-sync-alt"></i>
+            Auto-refreshing every 30s
+        </div>
+        
+        <!-- Header -->
+        <div class="admin-header">
+            <h1><i class="fas fa-crown"></i> YouTube API Pro Admin Panel</h1>
+            <p class="mb-0">Advanced MongoDB Atlas Analytics & Management Dashboard</p>
+            <small class="text-light">Admin Key: {{ admin_key }}</small>
+        </div>
+        
+        <!-- Navigation Tabs -->
+        <ul class="nav nav-tabs" id="adminTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="dashboard-tab" data-bs-toggle="tab" data-bs-target="#dashboard" type="button" role="tab">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="analytics-tab" data-bs-toggle="tab" data-bs-target="#analytics" type="button" role="tab">
+                    <i class="fas fa-chart-pie"></i> Analytics
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="apikeys-tab" data-bs-toggle="tab" data-bs-target="#apikeys" type="button" role="tab">
+                    <i class="fas fa-key"></i> API Management
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="logs-tab" data-bs-toggle="tab" data-bs-target="#logs" type="button" role="tab">
+                    <i class="fas fa-stream"></i> Live Activity
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="system-tab" data-bs-toggle="tab" data-bs-target="#system" type="button" role="tab">
+                    <i class="fas fa-cogs"></i> System
+                </button>
+            </li>
+        </ul>
+        
+        <!-- Tab Content -->
+        <div class="tab-content" id="adminTabContent">
+            <!-- Dashboard Tab -->
+            <div class="tab-pane fade show active" id="dashboard" role="tabpanel">
+                <div class="row">
+                    <div class="col-lg-3 col-md-6">
+                        <div class="metric-card text-center">
+                            <i class="fas fa-chart-bar fa-2x mb-2" style="color: #4facfe;"></i>
+                            <div class="metric-number" id="totalRequests">0</div>
+                            <div class="metric-label">Total Requests</div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <div class="metric-card text-center">
+                            <i class="fas fa-clock fa-2x mb-2" style="color: #56ab2f;"></i>
+                            <div class="metric-number" id="todayRequests">0</div>
+                            <div class="metric-label">Today's Requests</div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <div class="metric-card text-center">
+                            <i class="fas fa-key fa-2x mb-2" style="color: #f093fb;"></i>
+                            <div class="metric-number" id="activeKeys">0</div>
+                            <div class="metric-label">Active API Keys</div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <div class="metric-card text-center">
+                            <i class="fas fa-exclamation-triangle fa-2x mb-2" style="color: #f5576c;"></i>
+                            <div class="metric-number" id="errorRate">0%</div>
+                            <div class="metric-label">Error Rate</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div class="chart-container">
+                            <h4><i class="fas fa-chart-line"></i> Requests Over Time (Real Data)</h4>
+                            <canvas id="requestsChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="chart-container">
+                            <h4><i class="fas fa-chart-doughnut"></i> Endpoint Distribution</h4>
+                            <canvas id="endpointChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Analytics Tab -->
+            <div class="tab-pane fade" id="analytics" role="tabpanel">
+                <div class="row">
+                    <div class="col-lg-6">
+                        <div class="chart-container">
+                            <h4><i class="fas fa-users"></i> API Key Usage Distribution</h4>
+                            <canvas id="keyUsageChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="chart-container">
+                            <h4><i class="fas fa-stopwatch"></i> Response Time Trends</h4>
+                            <canvas id="responseTimeChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="chart-container">
+                            <h4><i class="fas fa-clock"></i> 24-Hour Activity Pattern</h4>
+                            <canvas id="hourlyChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- API Keys Management Tab -->
+            <div class="tab-pane fade" id="apikeys" role="tabpanel">
+                <div class="row">
+                    <div class="col-lg-6">
+                        <div class="data-container">
+                            <h3><i class="fas fa-plus-circle"></i> Create New API Key</h3>
+                            <form id="createKeyForm">
+                                <div class="mb-3">
+                                    <label for="keyName" class="form-label">Key Name</label>
+                                    <input type="text" class="form-control" id="keyName" placeholder="Enter key name" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="dailyLimit" class="form-label">Daily Request Limit</label>
+                                    <input type="number" class="form-control" id="dailyLimit" value="1000" min="1" max="50000">
+                                </div>
+                                <button type="submit" class="btn btn-gradient">
+                                    <i class="fas fa-key"></i> Create API Key
+                                </button>
+                            </form>
+                            
+                            <div id="newKeyResult" style="display: none;" class="mt-3">
+                                <div class="alert alert-success">
+                                    <h6><i class="fas fa-check-circle"></i> New API Key Created:</h6>
+                                    <div class="d-flex align-items-center">
+                                        <code id="newKeyValue" class="flex-grow-1"></code>
+                                        <button class="btn btn-sm btn-outline-light ms-2" onclick="copyToClipboard('newKeyValue')">
+                                            <i class="fas fa-copy"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="data-container">
+                            <h3><i class="fas fa-list"></i> API Keys (Live Data)</h3>
+                            <div id="apiKeysList">
+                                <div class="text-center">
+                                    <i class="fas fa-spinner fa-spin"></i> Loading real data from MongoDB...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Live Logs Tab -->
+            <div class="tab-pane fade" id="logs" role="tabpanel">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="data-container">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h3><i class="fas fa-stream"></i> Real-time API Activity Logs</h3>
+                                <div>
+                                    <button class="btn btn-sm btn-outline-light" onclick="refreshLogs()">
+                                        <i class="fas fa-sync-alt"></i> Refresh
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-light" onclick="clearLogs()">
+                                        <i class="fas fa-trash-alt"></i> Clear View
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="logsContainer">
+                                <div class="text-center">
+                                    <i class="fas fa-spinner fa-spin"></i> Loading live logs from MongoDB Atlas...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- System Tab -->
+            <div class="tab-pane fade" id="system" role="tabpanel">
+                <div class="row">
+                    <div class="col-lg-6">
+                        <div class="data-container">
+                            <h3><i class="fas fa-database"></i> Database Status</h3>
+                            <div id="dbStatus">
+                                <div class="d-flex align-items-center mb-2">
+                                    <span class="status-indicator status-active"></span>
+                                    <strong>MongoDB Atlas Connected</strong>
+                                </div>
+                                <small class="text-muted">cluster0.5jo18.mongodb.net</small>
+                            </div>
+                        </div>
+                        
+                        <div class="data-container">
+                            <h3><i class="fas fa-robot"></i> Telegram Integration</h3>
+                            <div id="telegramStatus">
+                                <div class="d-flex align-items-center mb-2">
+                                    <span class="status-indicator status-active"></span>
+                                    <strong>Telegram Bot Active</strong>
+                                </div>
+                                <small class="text-muted">File caching enabled</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-6">
+                        <div class="data-container">
+                            <h3><i class="fas fa-cog"></i> System Information</h3>
+                            <div>
+                                <p><strong>API Version:</strong> 1.0.0</p>
+                                <p><strong>Server:</strong> Gunicorn + Flask</p>
+                                <p><strong>Environment:</strong> Production</p>
+                                <p><strong>Rate Limit:</strong> 500 requests/hour</p>
+                                <p><strong>Cache Timeout:</strong> 1 hour</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Global variables
+        let charts = {};
+        const adminKey = '{{ admin_key }}';
+        let refreshInterval;
+        
+        // Initialize everything when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initCharts();
+            loadDashboardData();
+            loadAPIKeys();
+            loadLogs();
+            startAutoRefresh();
+        });
+        
+        // Initialize all charts
+        function initCharts() {
+            // Requests Over Time Chart
+            const requestsCtx = document.getElementById('requestsChart').getContext('2d');
+            charts.requests = new Chart(requestsCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Requests',
+                        data: [],
+                        borderColor: '#4facfe',
+                        backgroundColor: 'rgba(79, 172, 254, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: '#fff' } }
+                    },
+                    scales: {
+                        x: { ticks: { color: '#fff' }, grid: { color: 'rgba(255,255,255,0.1)' } },
+                        y: { ticks: { color: '#fff' }, grid: { color: 'rgba(255,255,255,0.1)' } }
+                    }
+                }
+            });
+            
+            // Endpoint Distribution Chart
+            const endpointCtx = document.getElementById('endpointChart').getContext('2d');
+            charts.endpoint = new Chart(endpointCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['/ytmp3', '/ytmp4', '/youtube'],
+                    datasets: [{
+                        data: [0, 0, 0],
+                        backgroundColor: ['#667eea', '#764ba2', '#56ab2f'],
+                        borderColor: 'rgba(255,255,255,0.2)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: '#fff' } }
+                    }
+                }
+            });
+            
+            // API Key Usage Chart
+            const keyUsageCtx = document.getElementById('keyUsageChart').getContext('2d');
+            charts.keyUsage = new Chart(keyUsageCtx, {
+                type: 'pie',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        data: [],
+                        backgroundColor: ['#f093fb', '#f5576c', '#4facfe', '#56ab2f', '#764ba2']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: '#fff' } }
+                    }
+                }
+            });
+            
+            // Response Time Chart
+            const responseTimeCtx = document.getElementById('responseTimeChart').getContext('2d');
+            charts.responseTime = new Chart(responseTimeCtx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Avg Response Time (ms)',
+                        data: [],
+                        backgroundColor: 'rgba(86, 171, 47, 0.8)',
+                        borderColor: '#56ab2f',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: '#fff' } }
+                    },
+                    scales: {
+                        x: { ticks: { color: '#fff' }, grid: { color: 'rgba(255,255,255,0.1)' } },
+                        y: { ticks: { color: '#fff' }, grid: { color: 'rgba(255,255,255,0.1)' } }
+                    }
+                }
+            });
+            
+            // Hourly Pattern Chart
+            const hourlyCtx = document.getElementById('hourlyChart').getContext('2d');
+            charts.hourly = new Chart(hourlyCtx, {
+                type: 'line',
+                data: {
+                    labels: Array.from({length: 24}, (_, i) => `${i}:00`),
+                    datasets: [{
+                        label: 'Requests by Hour',
+                        data: new Array(24).fill(0),
+                        borderColor: '#f093fb',
+                        backgroundColor: 'rgba(240, 147, 251, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: '#fff' } }
+                    },
+                    scales: {
+                        x: { ticks: { color: '#fff' }, grid: { color: 'rgba(255,255,255,0.1)' } },
+                        y: { ticks: { color: '#fff' }, grid: { color: 'rgba(255,255,255,0.1)' } }
+                    }
+                }
+            });
+        }
+        
+        // Load dashboard data from MongoDB
+        async function loadDashboardData() {
+            try {
+                const response = await fetch(`/admin/stats?admin_key=${adminKey}`);
+                const data = await response.json();
+                
+                // Update metrics
+                document.getElementById('totalRequests').textContent = data.total_requests || 0;
+                document.getElementById('todayRequests').textContent = data.today_requests || 0;
+                document.getElementById('activeKeys').textContent = data.active_keys || 0;
+                document.getElementById('errorRate').textContent = `${data.error_rate || 0}%`;
+                
+                // Update charts with real data
+                updateCharts(data);
+                
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+            }
+        }
+        
+        // Update charts with real MongoDB data
+        function updateCharts(data) {
+            if (data.requests_over_time) {
+                charts.requests.data.labels = data.requests_over_time.labels;
+                charts.requests.data.datasets[0].data = data.requests_over_time.data;
+                charts.requests.update('none');
+            }
+            
+            if (data.endpoint_distribution) {
+                charts.endpoint.data.datasets[0].data = [
+                    data.endpoint_distribution.ytmp3 || 0,
+                    data.endpoint_distribution.ytmp4 || 0,
+                    data.endpoint_distribution.youtube || 0
+                ];
+                charts.endpoint.update('none');
+            }
+            
+            if (data.key_usage) {
+                charts.keyUsage.data.labels = data.key_usage.labels;
+                charts.keyUsage.data.datasets[0].data = data.key_usage.data;
+                charts.keyUsage.update('none');
+            }
+            
+            if (data.hourly_pattern) {
+                charts.hourly.data.datasets[0].data = data.hourly_pattern;
+                charts.hourly.update('none');
+            }
+        }
+        
+        // Load API keys from MongoDB
+        async function loadAPIKeys() {
+            try {
+                const response = await fetch(`/admin/keys?admin_key=${adminKey}`);
+                const keys = await response.json();
+                
+                const container = document.getElementById('apiKeysList');
+                container.innerHTML = '';
+                
+                if (keys.length === 0) {
+                    container.innerHTML = '<div class="text-center text-muted">No API keys found</div>';
+                    return;
+                }
+                
+                keys.forEach(key => {
+                    const keyElement = document.createElement('div');
+                    keyElement.className = 'key-entry';
+                    keyElement.innerHTML = `
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">${key.name}</h6>
+                                <code class="small">${key.key}</code>
+                                <div class="small text-muted mt-1">
+                                    Used: ${key.usage || 0}/${key.daily_limit} requests
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <div class="small mb-2">
+                                    <span class="status-indicator ${key.active ? 'status-active' : 'status-inactive'}"></span>
+                                    ${key.active ? 'Active' : 'Inactive'}
+                                </div>
+                                <button class="btn btn-sm btn-outline-danger" onclick="deleteKey('${key.key}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    container.appendChild(keyElement);
+                });
+                
+            } catch (error) {
+                console.error('Error loading API keys:', error);
+            }
+        }
+        
+        // Load logs from MongoDB
+        async function loadLogs() {
+            try {
+                const response = await fetch(`/admin/logs?admin_key=${adminKey}&limit=50`);
+                const logs = await response.json();
+                
+                const container = document.getElementById('logsContainer');
+                container.innerHTML = '';
+                
+                if (logs.length === 0) {
+                    container.innerHTML = '<div class="text-center text-muted">No logs found</div>';
+                    return;
+                }
+                
+                logs.forEach(log => {
+                    const logElement = document.createElement('div');
+                    logElement.className = 'log-entry';
+                    logElement.innerHTML = `
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="small text-muted">${new Date(log.timestamp).toLocaleString()}</div>
+                                <div class="fw-bold" style="color: #4facfe;">${log.endpoint}</div>
+                                <div class="small">${log.ip}</div>
+                            </div>
+                            <div class="text-end">
+                                <code class="small">${log.api_key}</code>
+                                <div class="small">
+                                    <span class="status-indicator ${log.status === 200 ? 'status-active' : 'status-inactive'}"></span>
+                                    ${log.status}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    container.appendChild(logElement);
+                });
+                
+            } catch (error) {
+                console.error('Error loading logs:', error);
+            }
+        }
+        
+        // Create new API key
+        document.getElementById('createKeyForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('keyName').value;
+            const dailyLimit = parseInt(document.getElementById('dailyLimit').value);
+            
+            try {
+                const response = await fetch('/api/admin/keys', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        name: name,
+                        daily_limit: dailyLimit,
+                        admin_key: adminKey
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('newKeyValue').textContent = result.key;
+                    document.getElementById('newKeyResult').style.display = 'block';
+                    document.getElementById('createKeyForm').reset();
+                    document.getElementById('dailyLimit').value = '1000';
+                    
+                    // Refresh API keys list
+                    loadAPIKeys();
+                } else {
+                    alert('Error creating API key: ' + result.error);
+                }
+            } catch (error) {
+                console.error('Error creating API key:', error);
+                alert('Error creating API key');
+            }
+        });
+        
+        // Delete API key
+        async function deleteKey(keyId) {
+            if (!confirm('Are you sure you want to delete this API key?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/admin/keys/${keyId}?admin_key=${adminKey}`, {
+                    method: 'DELETE'
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    loadAPIKeys();
+                    loadDashboardData();
+                } else {
+                    alert('Error deleting API key: ' + result.error);
+                }
+            } catch (error) {
+                console.error('Error deleting API key:', error);
+                alert('Error deleting API key');
+            }
+        }
+        
+        // Copy to clipboard
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            const text = element.textContent;
+            navigator.clipboard.writeText(text).then(function() {
+                alert('Copied to clipboard!');
+            }).catch(function() {
+                alert('Failed to copy to clipboard');
+            });
+        }
+        
+        // Refresh functions
+        function refreshLogs() {
+            loadLogs();
+        }
+        
+        function clearLogs() {
+            document.getElementById('logsContainer').innerHTML = '<div class="text-center text-muted">Log view cleared. Click refresh to reload.</div>';
+        }
+        
+        // Auto-refresh functionality
+        function startAutoRefresh() {
+            refreshInterval = setInterval(() => {
+                loadDashboardData();
+                loadAPIKeys();
+                loadLogs();
+                
+                // Update refresh indicator
+                const indicator = document.getElementById('refreshIndicator');
+                indicator.style.opacity = '0.5';
+                setTimeout(() => {
+                    indicator.style.opacity = '1';
+                }, 500);
+                
+            }, 30000); // Refresh every 30 seconds
+        }
+        
+        // Stop auto-refresh when tab is not visible
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                clearInterval(refreshInterval);
+            } else {
+                startAutoRefresh();
+            }
+        });
+    </script>
+</body>
+</html>

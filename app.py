@@ -391,7 +391,7 @@ def stream_endpoint(stream_id):
 
 @app.route('/admin')
 def admin_panel():
-    """Admin panel for API key management"""
+    """Unified Admin Panel for API key management and analytics"""
     admin_key = request.args.get('admin_key')
     if not admin_key:
         return "Access denied. Valid admin key required.", 403
@@ -400,7 +400,7 @@ def admin_panel():
     if not api_key_obj or not api_key_obj.is_admin:
         return "Access denied. Valid admin key required.", 403
     
-    return render_template('admin.html', admin_key=admin_key)
+    return render_template('admin_unified.html', admin_key=admin_key)
 
 @app.route('/api/admin/keys')
 @require_admin_key
@@ -518,10 +518,8 @@ def internal_error(e):
     logger.error(f"Internal server error: {e}")
     return jsonify({"error": "Internal server error"}), 500
 
-# Advanced Admin Panel Routes
-@app.route('/admin/pro')
-def admin_pro_panel():
-    return render_template('admin_pro.html')
+# Legacy route redirect (removed - all functionality now in /admin)
+# @app.route('/admin/pro') - REMOVED: Now unified in /admin
 
 @app.route('/admin/stats')
 def admin_stats():
