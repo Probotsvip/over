@@ -235,7 +235,7 @@ def index():
 @app.route('/youtube')
 @require_api_key
 @limiter.limit(API_RATE_LIMIT)
-async def youtube_endpoint():
+def youtube_endpoint():
     """Main YouTube API endpoint"""
     try:
         query = request.args.get('query')
@@ -244,8 +244,14 @@ async def youtube_endpoint():
         if not query:
             return jsonify({"error": "Query parameter is required"}), 400
         
+        # Parse video ID from URL or use directly
+        video_id = youtube_service.parse_video_id(query)
+        if not video_id:
+            return jsonify({"error": "Invalid YouTube URL or video ID"}), 400
+        
         # Get video information
-        result = await youtube_service.get_video_info(query, video)
+        stream_type = "video" if video else "audio"
+        result = youtube_service.get_video_info(video_id, stream_type)
         
         if not result:
             return jsonify({"error": "Video not found or unavailable"}), 404
@@ -257,7 +263,7 @@ async def youtube_endpoint():
         return jsonify({"error": "Internal server error"}), 500
 
 @app.route('/stream/<stream_id>')
-async def stream_endpoint(stream_id):
+def stream_endpoint(stream_id):
     """Stream endpoint for media delivery"""
     try:
         # This would be implemented based on your streaming requirements
