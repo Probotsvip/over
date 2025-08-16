@@ -98,7 +98,7 @@ class TelegramService:
                 telegram_file = TelegramFile.from_dict(file_doc)
                 # Verify file still exists in Telegram
                 try:
-                    file_info = await self.bot.get_file(telegram_file.file_id)
+                    file_info = await self.bot.get_file(file_id=telegram_file.file_id)
                     
                     if file_info:
                         return f"https://api.telegram.org/file/bot{self.bot_token}/{file_info.file_path}"
@@ -136,20 +136,24 @@ class TelegramService:
                     filename = f"{title[:50]}_{video_id}.{extension}"
                     
                     if stream_type == "video":
+                        from io import BytesIO
+                        video_file = BytesIO(file_data)
+                        video_file.name = filename
                         message = await self.bot.send_video(
                             chat_id=self.channel_id,
-                            video=file_data,
-                            filename=filename,
+                            video=video_file,
                             caption=f"{title}\nID: {video_id}"
                         )
                         file_id = message.video.file_id
                         file_unique_id = message.video.file_unique_id
                         file_size = message.video.file_size
                     else:
+                        from io import BytesIO
+                        audio_file = BytesIO(file_data)
+                        audio_file.name = filename
                         message = await self.bot.send_audio(
                             chat_id=self.channel_id,
-                            audio=file_data,
-                            filename=filename,
+                            audio=audio_file,
                             title=title,
                             caption=f"ID: {video_id}"
                         )
