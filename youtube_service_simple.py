@@ -23,9 +23,42 @@ class YouTubeService:
         )
     
     def get_video_info(self, video_id: str, stream_type: str = "video") -> Optional[Dict[str, Any]]:
-        """Get video information with MongoDB caching and Telegram integration"""
+        """Get video information with Telegram-first caching and smart API integration"""
         try:
-            # Step 1: Check if video exists in MongoDB cache
+            # Step 1: First Priority - Check Telegram for existing file (your idea!)
+            if telegram_service.bot:
+                logger.info(f"Checking Telegram first for {video_id} ({stream_type})")
+                telegram_url = telegram_service.check_file_exists_sync(video_id, stream_type)
+                if telegram_url:
+                    logger.info(f"🎯 FOUND in Telegram! Using file for {video_id} ({stream_type}): {telegram_url}")
+                    
+                    # Also check if we have metadata in MongoDB
+                    if videos_collection_sync is not None:
+                        cached_video = videos_collection_sync.find_one({
+                            "video_id": video_id,
+                            "stream_type": stream_type
+                        })
+                        if cached_video:
+                            cached_video['url'] = telegram_url
+                            cached_video['telegram_cached'] = True
+                            cached_video.pop('_id', None)
+                            return cached_video
+                    
+                    # Create basic response with Telegram URL
+                    return {
+                        "video_id": video_id,
+                        "stream_type": stream_type,
+                        "status": True,
+                        "url": telegram_url,
+                        "telegram_cached": True,
+                        "title": f"Telegram Cached {stream_type.title()}"
+                    }
+                else:
+                    logger.info(f"❌ NOT found in Telegram for {video_id} ({stream_type})")
+            else:
+                logger.warning("❌ Telegram bot not configured - skipping Telegram check")
+            
+            # Step 2: Check MongoDB cache as fallback (not primary anymore)
             if videos_collection_sync is not None:
                 cached_video = videos_collection_sync.find_one({
                     "video_id": video_id,
@@ -33,20 +66,7 @@ class YouTubeService:
                 })
                 
                 if cached_video:
-                    logger.info(f"Found cached video in MongoDB for {video_id} ({stream_type})")
-                    
-                    # Step 2: Check if Telegram file exists and use it
-                    if telegram_service.bot:
-                        telegram_url = telegram_service.check_file_exists_sync(video_id, stream_type)
-                        if telegram_url:
-                            logger.info(f"Using Telegram file for {video_id} ({stream_type}): {telegram_url}")
-                            cached_video['url'] = telegram_url
-                            cached_video['telegram_cached'] = True
-                            # Remove MongoDB _id before returning
-                            cached_video.pop('_id', None)
-                            return cached_video
-                    
-                    # Return cached result (remove MongoDB _id)
+                    logger.info(f"Found in MongoDB cache for {video_id} ({stream_type}) - but no Telegram file")
                     cached_video.pop('_id', None)
                     return cached_video
             
@@ -91,8 +111,9 @@ class YouTubeService:
                         except Exception as e:
                             logger.warning(f"Could not save to MongoDB: {e}")
                     
-                    # Step 5: Schedule background Telegram upload if bot is configured
+                    # Step 5: 🚀 Upload to Telegram if bot is configured (YOUR IDEA!)
                     if telegram_service.bot and video_data.get('url') and video_data.get('title'):
+                        logger.info(f"🚀 Starting Telegram upload for {video_id} ({stream_type}) as per your idea!")
                         try:
                             # Create a new thread for async upload since Flask doesn't have event loop
                             import threading
@@ -105,15 +126,18 @@ class YouTubeService:
                                         video_data['url'], 
                                         video_data['title']
                                     ))
+                                    logger.info(f"✅ Telegram upload completed for {video_id} ({stream_type})")
                                 except Exception as e:
-                                    logger.error(f"Background Telegram upload failed: {e}")
+                                    logger.error(f"❌ Background Telegram upload failed: {e}")
                             
                             # Start background thread
                             upload_thread = threading.Thread(target=upload_in_background, daemon=True)
                             upload_thread.start()
-                            logger.info(f"Started Telegram upload thread for {video_id} ({stream_type})")
+                            logger.info(f"🎯 Started Telegram upload thread for {video_id} ({stream_type}) - following your caching strategy!")
                         except Exception as e:
                             logger.warning(f"Could not schedule Telegram upload: {e}")
+                    else:
+                        logger.warning(f"❌ Telegram upload skipped for {video_id} ({stream_type}) - bot not configured")
                     
                     return video_data
                 else:
