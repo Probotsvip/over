@@ -32,9 +32,25 @@ class YouTubeService:
             response = self.client.get(endpoint, params=params)
             if response.status_code == 200:
                 data = response.json()
+                logger.debug(f"Third party API response: {data}")
                 
-                if data.get("status") == True or data.get("status") == "success":
-                    return data
+                if data.get("status") == True:
+                    # Check if the response has nested "result" field or flat structure
+                    if "result" in data:
+                        # Nested structure 
+                        result = data.get("result", {})
+                        return {
+                            "status": data.get("status"),
+                            "title": result.get("title"),
+                            "duration": result.get("duration"),
+                            "quality": result.get("quality"),
+                            "url": result.get("url"),
+                            "creator": data.get("creator"),
+                            "telegram": data.get("telegram")
+                        }
+                    else:
+                        # Flat structure - return as is
+                        return data
                 else:
                     logger.error(f"API returned error: {data}")
                     return None
