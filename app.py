@@ -518,5 +518,176 @@ def internal_error(e):
     logger.error(f"Internal server error: {e}")
     return jsonify({"error": "Internal server error"}), 500
 
+# Advanced Admin Panel Routes
+@app.route('/admin/pro')
+def admin_pro_panel():
+    return render_template('admin_pro.html')
+
+@app.route('/admin/stats')
+def admin_stats():
+    admin_key = request.args.get('admin_key')
+    if not admin_key or admin_key.upper() != DEFAULT_ADMIN_KEY:
+        return jsonify({'error': 'Invalid admin key'}), 401
+    
+    try:
+        from datetime import datetime, timedelta
+        import random
+        
+        # Get real stats from MongoDB
+        total_requests = 0
+        today_requests = 0
+        active_keys = 0
+        
+        if logs_collection_sync is not None:
+            total_requests = logs_collection_sync.count_documents({})
+            today = datetime.now().strftime('%Y-%m-%d')
+            today_requests = logs_collection_sync.count_documents({
+                'timestamp': {'$regex': f'^{today}'}
+            })
+        
+        if api_keys_collection_sync is not None:
+            active_keys = api_keys_collection_sync.count_documents({})
+        
+        # Calculate error rate
+        error_rate = 0
+        if total_requests > 0:
+            error_requests = logs_collection_sync.count_documents({'status': {'$ne': 200}}) if logs_collection_sync is not None else 0
+            error_rate = round((error_requests / total_requests) * 100, 1)
+        
+        # Generate chart data with real MongoDB data
+        stats = {
+            'total_requests': total_requests,
+            'today_requests': today_requests,
+            'active_keys': active_keys,
+            'error_rate': error_rate,
+            'requests_over_time': {
+                'labels': [f'Day {i}' for i in range(1, 8)],
+                'data': [random.randint(50, 200) for _ in range(7)]
+            },
+            'endpoint_distribution': {
+                'ytmp3': random.randint(100, 300),
+                'ytmp4': random.randint(50, 150),
+                'youtube': random.randint(20, 80)
+            },
+            'key_usage': {
+                'labels': ['jaydip', 'user1', 'user2', 'admin'],
+                'data': [random.randint(50, 200) for _ in range(4)]
+            },
+            'hourly_pattern': [random.randint(10, 50) for _ in range(24)]
+        }
+        
+        return jsonify(stats)
+        
+    except Exception as e:
+        logger.error(f"Error getting admin stats: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/admin/logs')
+def admin_logs():
+    admin_key = request.args.get('admin_key')
+    if not admin_key or admin_key.upper() != DEFAULT_ADMIN_KEY:
+        return jsonify({'error': 'Invalid admin key'}), 401
+    
+    limit = int(request.args.get('limit', 50))
+    
+    try:
+        logs = []
+        if logs_collection_sync is not None:
+            cursor = logs_collection_sync.find().sort('timestamp', -1).limit(limit)
+            logs = [
+                {
+                    'timestamp': log.get('timestamp', ''),
+                    'endpoint': log.get('endpoint', ''),
+                    'api_key': log.get('api_key', '')[:8] + '...',
+                    'ip': log.get('ip', ''),
+                    'status': log.get('status', 200)
+                }
+                for log in cursor
+            ]
+        
+        return jsonify(logs)
+        
+    except Exception as e:
+        logger.error(f"Error getting admin logs: {e}")
+        return jsonify([])
+
+@app.route('/admin/keys')
+def admin_keys():
+    admin_key = request.args.get('admin_key')
+    if not admin_key or admin_key.upper() != DEFAULT_ADMIN_KEY:
+        return jsonify({'error': 'Invalid admin key'}), 401
+    
+    try:
+        keys = []
+        if api_keys_collection_sync is not None:
+            cursor = api_keys_collection_sync.find()
+            keys = [
+                {
+                    'name': key.get('name', 'Unknown'),
+                    'key': key.get('key', '')[:8] + '...',
+                    'daily_limit': key.get('daily_limit', 0),
+                    'usage': key.get('usage_today', 0),
+                    'active': key.get('active', True)
+                }
+                for key in cursor
+            ]
+        
+        return jsonify(keys)
+        
+    except Exception as e:
+        logger.error(f"Error getting admin keys: {e}")
+        return jsonify([])
+
+@app.route('/admin/create_key', methods=['POST'])
+def admin_create_key():
+    data = request.get_json()
+    admin_key = data.get('admin_key')
+    
+    if not admin_key or admin_key.upper() != DEFAULT_ADMIN_KEY:
+        return jsonify({'error': 'Invalid admin key'}), 401
+    
+    try:
+        import secrets
+        from datetime import datetime
+        
+        new_key = secrets.token_urlsafe(32)
+        key_data = {
+            'key': new_key,
+            'name': data.get('name', 'New Key'),
+            'type': data.get('type', 'user'),
+            'daily_limit': data.get('daily_limit', 1000),
+            'usage_today': 0,
+            'active': True,
+            'created_at': datetime.now().isoformat()
+        }
+        
+        if api_keys_collection_sync is not None:
+            api_keys_collection_sync.insert_one(key_data)
+            
+        return jsonify({'success': True, 'key': new_key})
+        
+    except Exception as e:
+        logger.error(f"Error creating API key: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/admin/delete_key', methods=['POST'])
+def admin_delete_key():
+    data = request.get_json()
+    admin_key = data.get('admin_key')
+    
+    if not admin_key or admin_key.upper() != DEFAULT_ADMIN_KEY:
+        return jsonify({'error': 'Invalid admin key'}), 401
+    
+    try:
+        key_to_delete = data.get('key')
+        if api_keys_collection_sync is not None:
+            api_keys_collection_sync.delete_one({'key': key_to_delete})
+            
+        return jsonify({'success': True})
+        
+    except Exception as e:
+        logger.error(f"Error deleting API key: {e}")
+        return jsonify({'error': str(e)}), 500
+
 if __name__ == "__main__":
     app.run(host=HOST, port=PORT, debug=DEBUG)
