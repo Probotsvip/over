@@ -12,7 +12,7 @@ HOST = os.environ.get("HOST", "0.0.0.0")
 PORT = int(os.environ.get("PORT", 5000))
 
 # MongoDB Configuration
-MONGO_DB_URI = os.environ.get("MONGO_DB_URI", "mongodb://localhost:27017/youtube_api")
+MONGO_DB_URI = os.environ.get("MONGO_DB_URI", "mongodb+srv://jaydipmore74:xCpTm5OPAfRKYnif@cluster0.5jo18.mongodb.net/?retryWrites=true&w=majority")
 
 # Telegram Configuration
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")

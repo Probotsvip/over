@@ -98,55 +98,74 @@ def validate_api_key(api_key: str) -> Optional[APIKey]:
     """Validate API key and return APIKey object if valid"""
     try:
         if api_keys_collection_sync is not None:
-            # Use MongoDB
-            key_doc = api_keys_collection_sync.find_one({"key": api_key})
-            if not key_doc:
-                return None
-            
-            api_key_obj = APIKey.from_dict(key_doc)
-            
-            # Check if expired
-            if api_key_obj.is_expired():
-                return None
-            
-            # Check rate limits
-            if api_key_obj.remaining_requests() <= 0:
-                return None
-            
-            # Reset count if needed
-            if datetime.now() > api_key_obj.reset_at:
-                api_key_obj.count = 0
-                api_key_obj.reset_at = datetime.now() + timedelta(days=1)
-                api_keys_collection_sync.update_one(
-                    {"key": api_key},
-                    {"$set": {"count": 0, "reset_at": api_key_obj.reset_at}}
-                )
-            
-            return api_key_obj
-        else:
-            # Use fallback storage
-            if api_key not in fallback_api_keys:
-                return None
-            
-            api_key_obj = fallback_api_keys[api_key]
-            
-            # Check if expired
-            if api_key_obj.is_expired():
-                return None
-            
-            # Check rate limits
-            if api_key_obj.remaining_requests() <= 0:
-                return None
-            
-            # Reset count if needed
-            if datetime.now() > api_key_obj.reset_at:
-                api_key_obj.count = 0
-                api_key_obj.reset_at = datetime.now() + timedelta(days=1)
-            
-            return api_key_obj
+            # Try to use MongoDB
+            try:
+                key_doc = api_keys_collection_sync.find_one({"key": api_key})
+                if not key_doc:
+                    # Check fallback if not found in MongoDB
+                    if api_key in fallback_api_keys:
+                        return fallback_api_keys[api_key]
+                    return None
+                
+                api_key_obj = APIKey.from_dict(key_doc)
+                
+                # Check if expired
+                if api_key_obj.is_expired():
+                    return None
+                
+                # Check rate limits
+                if api_key_obj.remaining_requests() <= 0:
+                    return None
+                
+                # Reset count if needed
+                if datetime.now() > api_key_obj.reset_at:
+                    api_key_obj.count = 0
+                    api_key_obj.reset_at = datetime.now() + timedelta(days=1)
+                    try:
+                        api_keys_collection_sync.update_one(
+                            {"key": api_key},
+                            {"$set": {"count": 0, "reset_at": api_key_obj.reset_at}}
+                        )
+                    except Exception:
+                        pass  # Silently fail if MongoDB update fails
+                
+                return api_key_obj
+            except Exception as mongo_error:
+                logger.warning(f"MongoDB error, falling back to in-memory: {mongo_error}")
+                # Fall through to fallback storage
+        
+        # Use fallback storage (either MongoDB is None or MongoDB failed)
+        if api_key not in fallback_api_keys:
+            return None
+        
+        api_key_obj = fallback_api_keys[api_key]
+        
+        # Check if expired
+        if api_key_obj.is_expired():
+            return None
+        
+        # Check rate limits
+        if api_key_obj.remaining_requests() <= 0:
+            return None
+        
+        # Reset count if needed
+        if datetime.now() > api_key_obj.reset_at:
+            api_key_obj.count = 0
+            api_key_obj.reset_at = datetime.now() + timedelta(days=1)
+        
+        return api_key_obj
             
     except Exception as e:
         logger.error(f"Error validating API key: {e}")
+        # Last resort: check if it's the default key
+        if api_key == DEFAULT_API_KEY or api_key == DEFAULT_ADMIN_KEY:
+            logger.info(f"Using hardcoded default key: {api_key}")
+            return APIKey(
+                key=api_key,
+                name="Default Key",
+                is_admin=(api_key == DEFAULT_ADMIN_KEY),
+                daily_limit=10000 if api_key == DEFAULT_ADMIN_KEY else 5000
+            )
         return None
 
 def require_api_key(f):
