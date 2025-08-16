@@ -2,7 +2,7 @@ modules = ["python-3.11", "web", "nodejs-20"]
 
 [nix]
 channel = "stable-25_05"
-packages = ["openssl", "postgresql", "mongodb", "mongodb-tools"]
+packages = ["mongodb", "mongodb-tools", "openssl", "postgresql"]
 
 [deployment]
 deploymentTarget = "autoscale"
