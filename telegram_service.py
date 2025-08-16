@@ -35,6 +35,41 @@ class TelegramService:
             elif not (self.bot_token and self.channel_id):
                 logger.warning("Telegram bot token or channel ID not configured")
     
+    def check_file_exists_sync(self, video_id: str, stream_type: str) -> Optional[str]:
+        """Check if file exists in Telegram channel (sync version for Flask)"""
+        try:
+            if not self.bot or telegram_files_collection_sync is None:
+                return None
+                
+            # Search in MongoDB for existing Telegram file using sync client
+            file_doc = telegram_files_collection_sync.find_one({
+                "video_id": video_id,
+                "stream_type": stream_type
+            })
+            
+            if file_doc:
+                telegram_file = TelegramFile.from_dict(file_doc)
+                logger.info(f"Found Telegram file for {video_id} ({stream_type}): {telegram_file.file_id}")
+                
+                # For Telegram files uploaded to channel, we need to get the file info first
+                # But since we can't make async calls here, let's use a different approach
+                # We'll create a direct link to the Telegram file using file_id
+                try:
+                    # Create a download link that will be handled by Telegram's getFile API
+                    # This approach uses the file_id to create a streamable URL
+                    telegram_url = f"https://api.telegram.org/bot{self.bot_token}/getFile?file_id={telegram_file.file_id}"
+                    logger.info(f"Generated Telegram download URL for {video_id} ({stream_type})")
+                    return telegram_url
+                except Exception as e:
+                    logger.error(f"Error generating Telegram URL: {e}")
+                    return None
+            
+            logger.info(f"No Telegram file found for {video_id} ({stream_type})")
+            return None
+        except Exception as e:
+            logger.error(f"Error checking Telegram file (sync): {e}")
+            return None
+    
     async def check_file_exists(self, video_id: str, stream_type: str) -> Optional[str]:
         """Check if file exists in Telegram channel"""
         try:

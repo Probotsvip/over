@@ -37,11 +37,14 @@ class YouTubeService:
                     
                     # Step 2: Check if Telegram file exists and use it
                     if telegram_service.bot:
-                        telegram_url = asyncio.run(telegram_service.check_file_exists(video_id, stream_type))
+                        telegram_url = telegram_service.check_file_exists_sync(video_id, stream_type)
                         if telegram_url:
-                            logger.info(f"Using Telegram file for {video_id} ({stream_type})")
+                            logger.info(f"Using Telegram file for {video_id} ({stream_type}): {telegram_url}")
                             cached_video['url'] = telegram_url
                             cached_video['telegram_cached'] = True
+                            # Remove MongoDB _id before returning
+                            cached_video.pop('_id', None)
+                            return cached_video
                     
                     # Return cached result (remove MongoDB _id)
                     cached_video.pop('_id', None)

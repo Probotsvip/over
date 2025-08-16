@@ -244,6 +244,120 @@ def youtube_endpoint():
         logger.error(f"Error in youtube endpoint: {e}")
         return jsonify({"error": "Internal server error"}), 500
 
+@app.route('/ytmp4')
+@limiter.limit(API_RATE_LIMIT)
+def ytmp4_endpoint():
+    """YouTube MP4 video download endpoint"""
+    try:
+        url = request.args.get('url')
+        key = request.args.get('key')
+        
+        if not url:
+            return jsonify({"error": "URL parameter is required"}), 400
+        
+        if not key:
+            return jsonify({"error": "API key required"}), 401
+        
+        # Validate API key
+        api_key_obj = validate_api_key(key)
+        if not api_key_obj:
+            return jsonify({"error": "Invalid or expired API key"}), 401
+        
+        # Increment usage count
+        if api_keys_collection_sync is not None:
+            api_keys_collection_sync.update_one(
+                {"key": key},
+                {"$inc": {"count": 1}}
+            )
+        else:
+            if key in fallback_api_keys:
+                fallback_api_keys[key].count += 1
+        
+        # Log API usage
+        if logs_collection_sync is not None:
+            log_entry = APILog(
+                api_key=key,
+                endpoint="ytmp4_endpoint",
+                query=url,
+                ip_address=get_remote_address(),
+                response_status=200
+            )
+            logs_collection_sync.insert_one(log_entry.to_dict())
+        
+        # Parse video ID from URL
+        video_id = youtube_service.parse_video_id(url)
+        if not video_id:
+            return jsonify({"error": "Invalid YouTube URL"}), 400
+        
+        # Get video information
+        result = youtube_service.get_video_info(video_id, "video")
+        
+        if not result:
+            return jsonify({"error": "Video not found or unavailable"}), 404
+        
+        return jsonify(result)
+        
+    except Exception as e:
+        logger.error(f"Error in ytmp4 endpoint: {e}")
+        return jsonify({"error": "Internal server error"}), 500
+
+@app.route('/ytmp3')
+@limiter.limit(API_RATE_LIMIT)
+def ytmp3_endpoint():
+    """YouTube MP3 audio download endpoint"""
+    try:
+        url = request.args.get('url')
+        key = request.args.get('key')
+        
+        if not url:
+            return jsonify({"error": "URL parameter is required"}), 400
+        
+        if not key:
+            return jsonify({"error": "API key required"}), 401
+        
+        # Validate API key
+        api_key_obj = validate_api_key(key)
+        if not api_key_obj:
+            return jsonify({"error": "Invalid or expired API key"}), 401
+        
+        # Increment usage count
+        if api_keys_collection_sync is not None:
+            api_keys_collection_sync.update_one(
+                {"key": key},
+                {"$inc": {"count": 1}}
+            )
+        else:
+            if key in fallback_api_keys:
+                fallback_api_keys[key].count += 1
+        
+        # Log API usage
+        if logs_collection_sync is not None:
+            log_entry = APILog(
+                api_key=key,
+                endpoint="ytmp3_endpoint",
+                query=url,
+                ip_address=get_remote_address(),
+                response_status=200
+            )
+            logs_collection_sync.insert_one(log_entry.to_dict())
+        
+        # Parse video ID from URL
+        video_id = youtube_service.parse_video_id(url)
+        if not video_id:
+            return jsonify({"error": "Invalid YouTube URL"}), 400
+        
+        # Get audio information
+        result = youtube_service.get_video_info(video_id, "audio")
+        
+        if not result:
+            return jsonify({"error": "Audio not found or unavailable"}), 404
+        
+        return jsonify(result)
+        
+    except Exception as e:
+        logger.error(f"Error in ytmp3 endpoint: {e}")
+        return jsonify({"error": "Internal server error"}), 500
+
 @app.route('/stream/<stream_id>')
 def stream_endpoint(stream_id):
     """Stream endpoint for media delivery"""
