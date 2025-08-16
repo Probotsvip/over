@@ -41,19 +41,15 @@
                         <h6 class="text-warning mb-2">Example Request:</h6>
                         <pre><code>GET /youtube?query=https://youtube.com/watch?v=dQw4w9WgXcQ&video=true&api_key=your_key</code></pre>
                         
-                        <h6 class="text-warning mb-2 mt-3">Example Response:</h6>
+                        <h6 class="text-warning mb-2 mt-3">Response Format:</h6>
                         <pre><code>{
-  "id": "dQw4w9WgXcQ",
-  "title": "Rick Astley - Never Gonna Give You Up",
-  "duration": "213 sec",
-  "link": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-  "channel": "Rick Astley",
-  "views": 1000000000,
-  "thumbnail": "https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg",
-  "stream_url": "https://cdn.example.com/stream/xyz.mp4",
-  "stream_type": "Video",
-  "cached": true,
-  "source": "telegram"
+  "status": true,
+  "title": "Video Title",
+  "duration": "Duration",
+  "quality": "Quality",
+  "url": "Real Download URL",
+  "creator": "API Creator",
+  "telegram": "@Telegram_Channel"
 }</code></pre>
                     </div>
                 </div>
@@ -76,8 +72,8 @@
                 </div>
 
                 <div class="demo-section">
-                    <h3><i class="fas fa-play-circle me-2"></i>API Demo</h3>
-                    <p class="text-light mb-4">Test the API with the demo key: <code>1a873582a7c83342f961cc0a177b2b26</code></p>
+                    <h3><i class="fas fa-play-circle me-2"></i>API Test</h3>
+                    <p class="text-light mb-4">Test the API with a valid API key:</p>
                     
                     <div class="row">
                         <div class="col-md-8">
@@ -89,12 +85,14 @@
                             <div class="form-check mb-3">
                                 <input class="form-check-input" type="checkbox" id="videoCheck">
                                 <label class="form-check-label text-light" for="videoCheck">
-                                    Video (unchecked = audio)
+                                    Video (unchecked = audio only)
                                 </label>
                             </div>
                         </div>
                     </div>
                     
+                    <input type="text" id="apiKeyInput" class="form-control mb-3" 
+                           placeholder="Enter your API key" value="">
                     <button id="testBtn" class="btn btn-primary me-2">
                         <i class="fas fa-play me-1"></i>Test API
                     </button>
@@ -149,9 +147,6 @@ async def get_youtube_stream(query):
                 <div class="features-card mt-4">
                     <h3><i class="fas fa-question-circle me-2"></i>Support</h3>
                     <p class="text-light">Need help or have questions?</p>
-                    <a href="/admin?admin_key=JAYDIP" class="btn btn-outline-light btn-sm me-2">
-                        <i class="fas fa-user-shield me-1"></i>Admin Panel
-                    </a>
                     <a href="/health" class="btn btn-outline-success btn-sm">
                         <i class="fas fa-heartbeat me-1"></i>Health Check
                     </a>
@@ -165,12 +160,18 @@ async def get_youtube_stream(query):
         document.getElementById('testBtn').addEventListener('click', async function() {
             const query = document.getElementById('queryInput').value;
             const video = document.getElementById('videoCheck').checked;
+            const apiKey = document.getElementById('apiKeyInput').value;
             const btn = this;
             const result = document.getElementById('result');
             const resultContent = document.getElementById('resultContent');
             
             if (!query) {
                 alert('Please enter a YouTube URL or video ID');
+                return;
+            }
+            
+            if (!apiKey) {
+                alert('Please enter your API key');
                 return;
             }
             
@@ -181,7 +182,7 @@ async def get_youtube_stream(query):
                 const params = new URLSearchParams({
                     query: query,
                     video: video,
-                    api_key: '1a873582a7c83342f961cc0a177b2b26'
+                    api_key: apiKey
                 });
                 
                 const response = await fetch(`/youtube?${params}`);

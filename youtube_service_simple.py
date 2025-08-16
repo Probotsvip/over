@@ -20,7 +20,7 @@ class YouTubeService:
         )
     
     def get_video_info(self, video_id: str, stream_type: str = "video") -> Optional[Dict[str, Any]]:
-        """Get video information from external API with fallback demo"""
+        """Get video information from external API - real data only"""
         try:
             endpoint = YTMP4_ENDPOINT if stream_type == "video" else YTMP3_ENDPOINT
             
@@ -33,39 +33,22 @@ class YouTubeService:
             if response.status_code == 200:
                 data = response.json()
                 
-                if data.get("status") == "success":
+                if data.get("status") == True or data.get("status") == "success":
                     return data
                 else:
                     logger.error(f"API returned error: {data}")
-                    return self._get_demo_response(video_id, stream_type)
+                    return None
             else:
                 logger.error(f"HTTP error {response.status_code}: {response.text}")
-                return self._get_demo_response(video_id, stream_type)
+                return None
                     
         except httpx.TimeoutException:
             logger.error(f"Timeout while requesting {stream_type} for video_id: {video_id}")
-            return self._get_demo_response(video_id, stream_type)
+            return None
         except Exception as e:
             logger.error(f"Error getting video info: {e}")
-            return self._get_demo_response(video_id, stream_type)
+            return None
     
-    def _get_demo_response(self, video_id: str, stream_type: str) -> Dict[str, Any]:
-        """Generate a demo response when external API fails"""
-        return {
-            "status": "success",
-            "source": "demo_mode",
-            "message": "External API unavailable - serving demo response",
-            "video_id": video_id,
-            "title": f"Demo Video {video_id}",
-            "thumbnail": f"https://img.youtube.com/vi/{video_id}/maxresdefault.jpg",
-            "duration": "3:42",
-            "type": stream_type,
-            "quality": "720p" if stream_type == "video" else "128kbps",
-            "download_url": f"https://demo.example.com/{stream_type}/{video_id}",
-            "file_size": "45.2 MB" if stream_type == "video" else "8.5 MB",
-            "format": "mp4" if stream_type == "video" else "mp3",
-            "note": "This is a demo response. In production, this would return real YouTube content via the external API."
-        }
     
     def get_video_stream(self, video_id: str, quality: str = "720p") -> Optional[Dict[str, Any]]:
         """Get video stream URL"""

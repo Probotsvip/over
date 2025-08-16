@@ -60,18 +60,6 @@ def init_default_keys():
                 api_keys_collection_sync.insert_one(admin_key.to_dict())
                 logger.info("Created admin API key in MongoDB")
             
-            # Check if demo key exists
-            demo_exists = api_keys_collection_sync.find_one({"key": DEFAULT_DEMO_KEY})
-            if not demo_exists:
-                demo_key = APIKey(
-                    key=DEFAULT_DEMO_KEY,
-                    name="Public Demo Key",
-                    daily_limit=100,
-                    created_by=DEFAULT_ADMIN_KEY
-                )
-                api_keys_collection_sync.insert_one(demo_key.to_dict())
-                logger.info("Created demo API key in MongoDB")
-            
             # Check if API request key exists
             api_exists = api_keys_collection_sync.find_one({"key": DEFAULT_API_KEY})
             if not api_exists:
@@ -91,12 +79,6 @@ def init_default_keys():
                 name="Admin Key",
                 is_admin=True,
                 daily_limit=10000
-            )
-            fallback_api_keys[DEFAULT_DEMO_KEY] = APIKey(
-                key=DEFAULT_DEMO_KEY,
-                name="Public Demo Key",
-                daily_limit=100,
-                created_by=DEFAULT_ADMIN_KEY
             )
             fallback_api_keys[DEFAULT_API_KEY] = APIKey(
                 key=DEFAULT_API_KEY,

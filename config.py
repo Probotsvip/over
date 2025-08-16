@@ -4,7 +4,6 @@ import os
 API_VERSION = "1.0.0"
 DEFAULT_ADMIN_KEY = "JAYDIP"
 DEFAULT_API_KEY = "jaydip"
-DEFAULT_DEMO_KEY = "1a873582a7c83342f961cc0a177b2b26"
 
 # Flask Configuration
 DEBUG = os.environ.get("DEBUG", "True").lower() == "true"
