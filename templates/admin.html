@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - YouTube API Service</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="header text-center py-4">
+            <h1 class="display-5 fw-bold text-white mb-2">
+                <i class="fas fa-user-shield me-2"></i>Admin Panel
+            </h1>
+            <p class="text-light">Manage API keys and monitor usage</p>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="features-card">
+                    <h3><i class="fas fa-chart-bar me-2"></i>Statistics</h3>
+                    <div id="stats" class="row">
+                        <div class="col-md-4">
+                            <div class="stat-card">
+                                <h4 id="totalKeys" class="text-primary">-</h4>
+                                <p class="text-light">Total API Keys</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="stat-card">
+                                <h4 id="totalRequests" class="text-success">-</h4>
+                                <p class="text-light">Total Requests</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="stat-card">
+                                <h4 id="activeKeys" class="text-warning">-</h4>
+                                <p class="text-light">Active Keys</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="features-card mt-4">
+                    <h3><i class="fas fa-plus me-2"></i>Create API Key</h3>
+                    <form id="createKeyForm">
+                        <div class="mb-3">
+                            <label for="keyName" class="form-label text-light">Key Name</label>
+                            <input type="text" class="form-control" id="keyName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="dailyLimit" class="form-label text-light">Daily Limit</label>
+                            <input type="number" class="form-control" id="dailyLimit" value="100" min="1" max="10000" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-plus me-1"></i>Create Key
+                        </button>
+                    </form>
+                    
+                    <div id="newKeyResult" class="mt-3" style="display: none;">
+                        <div class="alert alert-success">
+                            <h6>New API Key Created:</h6>
+                            <code id="newKeyValue" class="text-dark"></code>
+                            <button class="btn btn-sm btn-outline-dark ms-2" onclick="copyToClipboard('newKeyValue')">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="features-card">
+                    <h3><i class="fas fa-key me-2"></i>API Keys</h3>
+                    <div class="table-responsive">
+                        <table class="table table-dark table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Key</th>
+                                    <th>Limit</th>
+                                    <th>Used</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="keysTable">
+                                <tr>
+                                    <td colspan="5" class="text-center">Loading...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="features-card mt-4">
+                    <h3><i class="fas fa-history me-2"></i>Recent Activity</h3>
+                    <div class="table-responsive">
+                        <table class="table table-dark table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Endpoint</th>
+                                    <th>Query</th>
+                                    <th>IP</th>
+                                </tr>
+                            </thead>
+                            <tbody id="logsTable">
+                                <tr>
+                                    <td colspan="4" class="text-center">Loading...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='admin.js') }}"></script>
+    <script>
+        const adminKey = new URLSearchParams(window.location.search).get('admin_key');
+        if (!adminKey) {
+            alert('Admin key required');
+            window.location.href = '/';
+        }
+        
+        // Initialize admin panel
+        window.adminKey = adminKey;
+        loadStats();
+        loadKeys();
+        
+        // Auto-refresh every 30 seconds
+        setInterval(() => {
+            loadStats();
+            loadKeys();
+        }, 30000);
+    </script>
+</body>
+</html>
