@@ -1,51 +1,38 @@
 import logging
+from motor.motor_asyncio import AsyncIOMotorClient
 from config import MONGO_DB_URI
 
 logger = logging.getLogger(__name__)
 
-# Initialize MongoDB connections
-mongodb_async = None
-mongodb_sync = None
-videos_collection = None
-api_keys_collection = None
-logs_collection = None
-telegram_files_collection = None
-videos_collection_sync = None
-api_keys_collection_sync = None
-logs_collection_sync = None
-telegram_files_collection_sync = None
-
+logger.info("Connecting to your Mongo Database...")
 try:
-    from motor.motor_asyncio import AsyncIOMotorClient
-    from pymongo import MongoClient
-    
-    logger.info("Connecting to MongoDB...")
-    
-    # Async client for async operations
     _mongo_async_ = AsyncIOMotorClient(MONGO_DB_URI)
-    mongodb_async = _mongo_async_.youtube_api
+    mongodb = _mongo_async_.youtube_api
     
-    # Sync client for sync operations
-    _mongo_sync_ = MongoClient(MONGO_DB_URI)
-    mongodb_sync = _mongo_sync_.youtube_api
+    # Collections for the YouTube API
+    videos_collection = mongodb.videos
+    api_keys_collection = mongodb.api_keys
+    logs_collection = mongodb.logs
+    telegram_files_collection = mongodb.telegram_files
     
-    # Collections
-    videos_collection = mongodb_async.videos
-    api_keys_collection = mongodb_async.api_keys
-    logs_collection = mongodb_async.logs
-    telegram_files_collection = mongodb_async.telegram_files
+    # For compatibility with sync operations (using motor)
+    mongodb_async = mongodb
+    videos_collection_sync = None  # Will be handled by async only
+    api_keys_collection_sync = None  # Will be handled by async only
+    logs_collection_sync = None  # Will be handled by async only
+    telegram_files_collection_sync = None  # Will be handled by async only
     
-    # Sync collections for synchronous operations
-    videos_collection_sync = mongodb_sync.videos
-    api_keys_collection_sync = mongodb_sync.api_keys
-    logs_collection_sync = mongodb_sync.logs
-    telegram_files_collection_sync = mongodb_sync.telegram_files
-    
-    logger.info("Connected to MongoDB successfully.")
-    
-except ImportError as e:
-    logger.error(f"MongoDB packages not available: {e}")
-    logger.warning("Running without MongoDB - API will use external services only")
+    logger.info("Connected to your Mongo Database.")
 except Exception as e:
-    logger.error(f"Failed to connect to MongoDB: {e}")
-    logger.warning("Running without MongoDB - API will use external services only")
+    logger.error(f"Failed to connect to your Mongo Database: {e}")
+    # Initialize as None for fallback handling
+    mongodb = None
+    videos_collection = None
+    api_keys_collection = None
+    logs_collection = None
+    telegram_files_collection = None
+    mongodb_async = None
+    videos_collection_sync = None
+    api_keys_collection_sync = None
+    logs_collection_sync = None
+    telegram_files_collection_sync = None
