@@ -412,7 +412,8 @@ def create_api_key():
         # Generate new API key
         new_key = secrets.token_hex(32)
         
-        admin_key = request.args.get('admin_key') or request.form.get('admin_key') or request.json.get('admin_key', '')
+        data = request.get_json() or {}
+        admin_key = request.args.get('admin_key') or request.form.get('admin_key') or data.get('admin_key', '')
         
         api_key = APIKey(
             key=new_key,
