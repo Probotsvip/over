@@ -2,8 +2,15 @@ import asyncio
 import logging
 import httpx
 from typing import Optional, Tuple
-from telegram import Bot
-from telegram.error import TelegramError
+try:
+    from telegram import Bot
+    from telegram.error import TelegramError
+    TELEGRAM_AVAILABLE = True
+except ImportError:
+    # Fallback if telegram is not properly installed
+    Bot = None
+    TelegramError = Exception
+    TELEGRAM_AVAILABLE = False
 from config import TELEGRAM_BOT_TOKEN, TELEGRAM_CHANNEL_ID
 from mongo import telegram_files_collection, telegram_files_collection_sync
 from models import TelegramFile
@@ -16,10 +23,17 @@ class TelegramService:
         self.channel_id = TELEGRAM_CHANNEL_ID
         self.bot = None
         
-        if self.bot_token and self.channel_id:
-            self.bot = Bot(token=self.bot_token)
+        if TELEGRAM_AVAILABLE and Bot and self.bot_token and self.channel_id:
+            try:
+                self.bot = Bot(token=self.bot_token)
+                logger.info("Telegram bot initialized successfully")
+            except Exception as e:
+                logger.warning(f"Failed to initialize Telegram bot: {e}")
         else:
-            logger.warning("Telegram bot token or channel ID not configured")
+            if not TELEGRAM_AVAILABLE:
+                logger.warning("Telegram library not available")
+            elif not (self.bot_token and self.channel_id):
+                logger.warning("Telegram bot token or channel ID not configured")
     
     async def check_file_exists(self, video_id: str, stream_type: str) -> Optional[str]:
         """Check if file exists in Telegram channel"""
