@@ -412,11 +412,13 @@ def create_api_key():
         # Generate new API key
         new_key = secrets.token_hex(32)
         
+        admin_key = request.args.get('admin_key') or request.form.get('admin_key') or request.json.get('admin_key', '')
+        
         api_key = APIKey(
             key=new_key,
             name=name,
             daily_limit=daily_limit,
-            created_by=getattr(request, 'admin_key').key
+            created_by=admin_key
         )
         
         if api_keys_collection_sync is not None:

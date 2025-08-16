@@ -55,11 +55,23 @@ class TelegramService:
                 # But since we can't make async calls here, let's use a different approach
                 # We'll create a direct link to the Telegram file using file_id
                 try:
-                    # Create a download link that will be handled by Telegram's getFile API
-                    # This approach uses the file_id to create a streamable URL
-                    telegram_url = f"https://api.telegram.org/bot{self.bot_token}/getFile?file_id={telegram_file.file_id}"
-                    logger.info(f"Generated Telegram download URL for {video_id} ({stream_type})")
-                    return telegram_url
+                    # Get file info and create proper streaming URL
+                    import httpx
+                    file_info_url = f"https://api.telegram.org/bot{self.bot_token}/getFile?file_id={telegram_file.file_id}"
+                    
+                    with httpx.Client(timeout=10.0) as client:
+                        response = client.get(file_info_url)
+                        if response.status_code == 200:
+                            file_info = response.json()
+                            if file_info['ok'] and 'result' in file_info:
+                                file_path = file_info['result']['file_path']
+                                # Create the actual download URL
+                                telegram_url = f"https://api.telegram.org/file/bot{self.bot_token}/{file_path}"
+                                logger.info(f"Generated Telegram streaming URL for {video_id} ({stream_type}): {file_path}")
+                                return telegram_url
+                    
+                    logger.warning(f"Could not get file info for {telegram_file.file_id}")
+                    return None
                 except Exception as e:
                     logger.error(f"Error generating Telegram URL: {e}")
                     return None
@@ -86,10 +98,7 @@ class TelegramService:
                 telegram_file = TelegramFile.from_dict(file_doc)
                 # Verify file still exists in Telegram
                 try:
-                    if stream_type == "video":
-                        file_info = await self.bot.get_file(telegram_file.file_id)
-                    else:
-                        file_info = await self.bot.get_file(telegram_file.file_id)
+                    file_info = await self.bot.get_file(telegram_file.file_id)
                     
                     if file_info:
                         return f"https://api.telegram.org/file/bot{self.bot_token}/{file_info.file_path}"
