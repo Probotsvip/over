@@ -51,34 +51,42 @@ async function loadKeys() {
         
         const keysTable = document.getElementById('keysTable');
         if (keys && keys.length > 0) {
-            keysTable.innerHTML = keys.map(key => `
+            keysTable.innerHTML = keys.map(key => {
+                // Handle different data formats from different API keys
+                const keyId = key.key || key.api_key || 'unknown';
+                const keyName = key.name || key.owner || 'Unnamed Key';
+                const isAdmin = key.is_admin || false;
+                const dailyLimit = key.daily_limit || key.daily_usage || 1000;
+                const count = key.count || key.total_requests || key.daily_requests || 0;
+                
+                return `
                 <tr>
                     <td>
-                        <strong>${key.name}</strong>
-                        ${key.is_admin ? '<span class="badge bg-warning text-dark ms-1">Admin</span>' : ''}
+                        <strong>${keyName}</strong>
+                        ${isAdmin ? '<span class="badge bg-warning text-dark ms-1">Admin</span>' : ''}
                     </td>
                     <td>
-                        <code class="small">${key.key.substring(0, 16)}...</code>
-                        <button class="btn btn-sm btn-outline-light ms-1" onclick="copyToClipboard('${key.key}', this)">
+                        <code class="small">${keyId.substring(0, 16)}...</code>
+                        <button class="btn btn-sm btn-outline-light ms-1" onclick="copyToClipboard('${keyId}', this)">
                             <i class="fas fa-copy"></i>
                         </button>
                     </td>
-                    <td>${key.daily_limit.toLocaleString()}</td>
+                    <td>${dailyLimit.toLocaleString()}</td>
                     <td>
-                        <span class="text-${key.count > key.daily_limit * 0.8 ? 'warning' : 'success'}">
-                            ${key.count}
+                        <span class="text-${count > dailyLimit * 0.8 ? 'warning' : 'success'}">
+                            ${count}
                         </span>
                     </td>
                     <td>
-                        ${key.is_admin ? 
+                        ${isAdmin ? 
                             '<span class="text-muted small">Protected</span>' : 
-                            `<button class="btn btn-sm btn-outline-danger" onclick="deleteKey('${key.key}', '${key.name}')">
+                            `<button class="btn btn-sm btn-outline-danger" onclick="deleteKey('${keyId}', '${keyName}')">
                                 <i class="fas fa-trash"></i>
                             </button>`
                         }
                     </td>
-                </tr>
-            `).join('');
+                </tr>`;
+            }).join('');
         } else {
             keysTable.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No API keys found</td></tr>';
         }
