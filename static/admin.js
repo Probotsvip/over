@@ -69,6 +69,9 @@ async function loadKeys() {
                 const dailyLimit = key.daily_limit || key.daily_usage || 1000;
                 const count = key.count || key.total_requests || key.daily_requests || 0;
                 
+                // Store full key ID for operations, display truncated version
+                const displayKeyId = keyId.length > 16 ? keyId.substring(0, 16) + '...' : keyId;
+                
                 return `
                 <tr>
                     <td>
@@ -76,7 +79,7 @@ async function loadKeys() {
                         ${isAdmin ? '<span class="badge bg-warning text-dark ms-1">Admin</span>' : ''}
                     </td>
                     <td>
-                        <code class="small">${keyId.substring(0, 16)}...</code>
+                        <code class="small">${displayKeyId}</code>
                         <button class="btn btn-sm btn-outline-light ms-1" onclick="copyToClipboard('${keyId}', this)">
                             <i class="fas fa-copy"></i>
                         </button>
