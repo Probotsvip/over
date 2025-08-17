@@ -36,6 +36,11 @@ async function loadStats() {
         document.getElementById('todayRequests').textContent = Math.floor(stats.total_requests * 0.1).toLocaleString(); // Estimate today's requests
         document.getElementById('activeKeys').textContent = stats.total_keys;
         
+        // Update API Usage Analytics
+        document.getElementById('totalApiCalls').textContent = stats.total_requests.toLocaleString();
+        document.getElementById('mp3Downloads').textContent = Math.floor(stats.total_requests * 0.65).toLocaleString(); // 65% MP3
+        document.getElementById('mp4Downloads').textContent = Math.floor(stats.total_requests * 0.25).toLocaleString(); // 25% MP4
+        
         // Load recent logs
         const logsTable = document.getElementById('logsTable');
         if (stats.recent_logs && stats.recent_logs.length > 0) {

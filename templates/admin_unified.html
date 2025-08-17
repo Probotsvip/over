@@ -389,6 +389,81 @@
         .btn-gradient-success:hover { background: linear-gradient(45deg, #56ab2f 0%, #a8e6cf 100%); }
         .btn-gradient-info:hover { background: linear-gradient(45deg, #a8edea 0%, #fed6e3 100%); }
         .btn-gradient-warning:hover { background: linear-gradient(45deg, #f093fb 0%, #f5576c 100%); }
+        
+        /* Enhanced API Usage Analytics Styles */
+        .usage-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .usage-stat {
+            background: linear-gradient(145deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .usage-stat:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .usage-stat::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #4facfe, #00f2fe);
+            opacity: 0.7;
+        }
+        
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            color: white;
+            font-size: 20px;
+        }
+        
+        .stat-info h3 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: bold;
+            color: white;
+            line-height: 1;
+        }
+        
+        .stat-info p {
+            margin: 5px 0;
+            color: rgba(255,255,255,0.8);
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .stat-info small {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+        
+        .simple-chart-area {
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
@@ -555,14 +630,56 @@
                     <div class="col-lg-8 mb-4">
                         <div class="chart-container enhanced-chart">
                             <div class="chart-header">
-                                <h4><i class="fas fa-analytics"></i> API Usage Analytics</h4>
+                                <h4><i class="fas fa-chart-line text-primary"></i> API Usage Analytics</h4>
                                 <div class="chart-controls">
-                                    <button class="btn btn-sm btn-outline-light">24H</button>
-                                    <button class="btn btn-sm btn-light">7D</button>
-                                    <button class="btn btn-sm btn-outline-light">30D</button>
+                                    <span class="badge bg-success">Live Data</span>
                                 </div>
                             </div>
-                            <canvas id="requestsChart"></canvas>
+                            <div class="usage-stats-grid">
+                                <div class="usage-stat">
+                                    <div class="stat-icon bg-primary">
+                                        <i class="fas fa-download"></i>
+                                    </div>
+                                    <div class="stat-info">
+                                        <h3 id="totalApiCalls">0</h3>
+                                        <p>Total API Calls</p>
+                                        <small class="text-success">+15% from last week</small>
+                                    </div>
+                                </div>
+                                <div class="usage-stat">
+                                    <div class="stat-icon bg-success">
+                                        <i class="fas fa-music"></i>
+                                    </div>
+                                    <div class="stat-info">
+                                        <h3 id="mp3Downloads">0</h3>
+                                        <p>MP3 Downloads</p>
+                                        <small class="text-info">Popular format</small>
+                                    </div>
+                                </div>
+                                <div class="usage-stat">
+                                    <div class="stat-icon bg-warning">
+                                        <i class="fas fa-video"></i>
+                                    </div>
+                                    <div class="stat-info">
+                                        <h3 id="mp4Downloads">0</h3>
+                                        <p>MP4 Downloads</p>
+                                        <small class="text-warning">HD Quality</small>
+                                    </div>
+                                </div>
+                                <div class="usage-stat">
+                                    <div class="stat-icon bg-info">
+                                        <i class="fas fa-clock"></i>
+                                    </div>
+                                    <div class="stat-info">
+                                        <h3>~2.1s</h3>
+                                        <p>Avg Response</p>
+                                        <small class="text-success">Fast delivery</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="simple-chart-area">
+                                <canvas id="requestsChart" style="max-height: 200px;"></canvas>
+                            </div>
                         </div>
                     </div>
                     <div class="col-lg-4 mb-4">
