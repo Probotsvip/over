@@ -7,139 +7,106 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet" />
   <style>
-    :root {
-      --bg:#0b0f14;--card:#121822;--muted:#94a3b8;--text:#e2e8f0;--primary:#22d3ee;--primary-2:#06b6d4;--accent:#a78bfa;--success:#34d399;--warning:#f59e0b;--danger:#ef4444;
-      --ring: 0 0 0 .25rem rgba(34,211,238,.25)
+    body {
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      color: #e2e8f0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
-    html,body{background:var(--bg);color:var(--text)}
-    .blur-bg{background:linear-gradient(180deg, rgba(34,211,238,.12), rgba(167,139,250,.08));backdrop-filter: blur(6px)}
-    .nav-brand{font-weight:800;letter-spacing:.3px}
-    .btn-primary{background:var(--primary);border-color:var(--primary-2)}
-    .btn-primary:hover{background:var(--primary-2);border-color:var(--primary)}
-    .btn-outline-light:hover{color:#0b0f14;background:#fff}
-    .badge-soft{background:rgba(34,211,238,.15);color:var(--primary)}
-    .card{background:var(--card);border:1px solid rgba(255,255,255,.06)}
-    .hero-title{font-size:clamp(2rem,4vw,3.5rem);font-weight:900;line-height:1.1}
-    .hero-sub{color:var(--muted)}
-    .price{font-size:2.25rem;font-weight:800}
-    .popular{border:1px solid var(--primary);box-shadow:0 0 0 .25rem rgba(34,211,238,.08)}
-    .feature i{width:26px;text-align:center;margin-right:.5rem;color:var(--success)}
-    .badges .badge{margin-right:.4rem}
-    .copy{cursor:pointer}
-    .glow{box-shadow:0 10px 30px rgba(34,211,238,.15)}
-    .footer a{color:var(--muted)}
-    .footer a:hover{color:#fff}
-    .tg-links a{text-decoration:none}
-    .mini{font-size:.9rem;color:var(--muted)}
-    .step{border-left:2px dashed rgba(255,255,255,.1)}
-    .step .dot{width:10px;height:10px;border-radius:50%;background:var(--accent);position:absolute;left:-6px;top:10px}
-    .faq button{color:#e2e8f0}
-    .toast { background: #111827; color: #e5e7eb; }
+    .card {
+      background: rgba(18, 24, 34, 0.9);
+      border: none;
+      border-radius: 1.5rem;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .card:hover {
+      transform: translateY(-10px) scale(1.03);
+      box-shadow: 0 15px 40px rgba(0,0,0,0.7);
+    }
+    .btn-primary {
+      background: linear-gradient(45deg, #06b6d4, #3b82f6);
+      border: none;
+      border-radius: 50px;
+      box-shadow: 0 5px 15px rgba(59,130,246,0.4);
+    }
+    .btn-primary:hover {
+      background: linear-gradient(45deg, #3b82f6, #06b6d4);
+    }
+    .hero-title {
+      font-size: clamp(2rem, 4vw, 3.5rem);
+      font-weight: 900;
+      text-shadow: 0 3px 10px rgba(0,0,0,0.6);
+    }
+    .price {
+      font-size: 2rem;
+      font-weight: 700;
+      background: linear-gradient(90deg, #22d3ee, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .badge-soft {
+      background: rgba(34,211,238,.15);
+      color: #22d3ee;
+    }
+    .glow {
+      box-shadow: 0 10px 30px rgba(34,211,238,.25);
+    }
   </style>
 </head>
 <body>
-  <!-- Top Bar -->
   <nav class="navbar navbar-expand-lg navbar-dark sticky-top blur-bg border-bottom border-dark">
     <div class="container">
-      <a class="navbar-brand nav-brand" href="#"><i class="fa-solid fa-bolt me-2 text-info"></i>SuperFast API</a>
+      <a class="navbar-brand fw-bold" href="#"><i class="fa-solid fa-bolt me-2 text-info"></i>SuperFast API</a>
       <div class="ms-auto d-flex gap-2">
         <a class="btn btn-outline-light btn-sm" href="#pricing"><i class="fa-solid fa-tags me-1"></i> Pricing</a>
         <a class="btn btn-primary btn-sm" href="#buy"><i class="fa-brands fa-telegram me-1"></i> Buy via Telegram</a>
       </div>
     </div>
-  </nav>  <!-- Hero -->  <header class="py-5 py-lg-6">
-    <div class="container">
-      <div class="row align-items-center g-4">
-        <div class="col-lg-7">
-          <span class="badge badge-soft rounded-pill mb-3"><i class="fa-solid fa-rocket me-1"></i> Go live in minutes</span>
-          <h1 class="hero-title mb-3">Sell & Use API Keys — Simple Checkout via Telegram</h1>
-          <p class="hero-sub lead">Blazing-fast endpoints, fair pricing, and instant delivery. Perfect for bots, apps, and dashboards.</p>
-          <div class="badges my-3">
-            <span class="badge text-bg-dark border"><i class="fa-solid fa-gauge-high me-1"></i> <strong>~300ms</strong> avg latency</span>
-            <span class="badge text-bg-dark border"><i class="fa-solid fa-shield-halved me-1"></i> Rate limited</span>
-            <span class="badge text-bg-dark border"><i class="fa-solid fa-plug me-1"></i> HTTPS</span>
-          </div>
-          <div class="d-flex gap-2 mt-4">
-            <a href="#buy" class="btn btn-primary btn-lg glow"><i class="fa-brands fa-telegram me-2"></i>Buy API Key</a>
-            <a href="#docs" class="btn btn-outline-light btn-lg"><i class="fa-solid fa-book me-2"></i>Quick Docs</a>
-          </div>
-          <p class="mini mt-3">No credit card on site. We process orders manually via Telegram for safety and anti-abuse.</p>
-        </div>
-        <div class="col-lg-5">
-          <div class="card p-3 p-md-4 glow">
-            <div class="d-flex align-items-center justify-content-between">
-              <strong>Base Endpoint</strong>
-              <button class="btn btn-sm btn-outline-light copy" data-copy="https://api.yourdomain.com/v1" id="copyEndpoint"><i class="fa-regular fa-copy me-1"></i>Copy</button>
-            </div>
-            <code class="d-block mt-2">https://api.yourdomain.com/v1</code>
-            <hr/>
-            <div class="d-flex align-items-center justify-content-between">
-              <strong>Example Request</strong>
-              <button class="btn btn-sm btn-outline-light copy" data-copy='curl -H "Authorization: Bearer YOUR_API_KEY" "https://api.yourdomain.com/v1/health"' id="copyCurl"><i class="fa-regular fa-copy me-1"></i>Copy</button>
-            </div>
-            <pre class="mt-2 mb-0"><code>curl -H "Authorization: Bearer YOUR_API_KEY" \ 
-"https://api.yourdomain.com/v1/health"</code></pre>
-          </div>
-        </div>
-      </div>
+  </nav>  <header class="py-5">
+    <div class="container text-center">
+      <h1 class="hero-title mb-3">Attractive 3D API Key Store</h1>
+      <p class="lead">Get your API key instantly via Telegram with just one click.</p>
+      <a href="#buy" class="btn btn-primary btn-lg glow"><i class="fa-brands fa-telegram me-2"></i>Buy API Key</a>
     </div>
-  </header>  <!-- Buy via Telegram -->  <section id="buy" class="py-5 border-top border-dark">
+  </header>  <section id="buy" class="py-5">
     <div class="container">
       <div class="row g-4 align-items-stretch">
         <div class="col-lg-5">
-          <div class="card h-100 p-4">
-            <h3 class="mb-3"><i class="fa-brands fa-telegram me-2 text-info"></i>Buy & Support on Telegram</h3>
-            <div class="tg-links">
-              <!-- TODO: Replace the placeholders below with your real handles/links -->
-              <p class="mb-2"><i class="fa-solid fa-user me-2"></i><strong>Seller DM:</strong> <a id="tgUser" href="https://t.me/YourUsername" target="_blank">@YourUsername</a></p>
-              <p class="mb-2"><i class="fa-solid fa-bullhorn me-2"></i><strong>Support Channel:</strong> <a id="tgChannel" href="https://t.me/YourChannel" target="_blank">t.me/YourChannel</a></p>
-              <p class="mb-3"><i class="fa-solid fa-users me-2"></i><strong>Support Group:</strong> <a id="tgGroup" href="https://t.me/YourSupportGroup" target="_blank">t.me/YourSupportGroup</a></p>
-              <div class="d-flex gap-2">
-                <a class="btn btn-primary" href="https://t.me/YourUsername" target="_blank"><i class="fa-brands fa-telegram me-2"></i>Message Seller</a>
-                <a class="btn btn-outline-light" href="https://t.me/YourSupportGroup" target="_blank"><i class="fa-solid fa-life-ring me-2"></i>Get Help</a>
-              </div>
-              <p class="mini mt-3">After payment, your API key is generated and delivered instantly in chat.</p>
+          <div class="card h-100 p-4 text-center">
+            <h3 class="mb-3"><i class="fa-brands fa-telegram me-2 text-info"></i>Buy & Support</h3>
+            <p class="mb-2"><i class="fa-solid fa-user me-2"></i><strong>Seller DM:</strong> <a href="https://t.me/Nottyboyy" target="_blank">@Nottyboyy</a></p>
+            <p class="mb-2"><i class="fa-solid fa-bullhorn me-2"></i><strong>Support Channel:</strong> <a href="https://t.me/KOMALMUSICUPDATE" target="_blank">@KOMALMUSICUPDATE</a></p>
+            <p class="mb-3"><i class="fa-solid fa-users me-2"></i><strong>Support Group:</strong> <a href="https://t.me/Komal_Music_Support" target="_blank">t.me/Komal_Music_Support</a></p>
+            <div class="d-flex gap-2 justify-content-center">
+              <a class="btn btn-primary" href="https://t.me/Nottyboyy" target="_blank"><i class="fa-brands fa-telegram me-2"></i>Message Seller</a>
+              <a class="btn btn-outline-light" href="https://t.me/Komal_Music_Support" target="_blank"><i class="fa-solid fa-life-ring me-2"></i>Get Help</a>
             </div>
           </div>
         </div>
         <div class="col-lg-7">
-          <div class="card h-100 p-4">
+          <div class="card h-100 p-4 text-center">
             <h3 class="mb-3"><i class="fa-solid fa-tags me-2 text-warning"></i>Plans</h3>
-            <div class="row row-cols-1 row-cols-md-3 g-3" id="pricing">
+            <div class="row row-cols-1 row-cols-md-2 g-3" id="pricing">
               <div class="col">
                 <div class="card h-100 p-3">
-                  <h5 class="mb-1">Starter</h5>
-                  <div class="price">FREE<span class="fs-6 text-secondary"> / mo</span></div>
-                  <ul class="list-unstyled mt-3 mb-4 mini">
-                    <li><i class="fa-solid fa-check text-success me-2"></i>50k requests</li>
+                  <h5 class="mb-1">Free</h5>
+                  <div class="price">₹0</div>
+                  <ul class="list-unstyled mt-3 mb-4">
+                    <li><i class="fa-solid fa-check text-success me-2"></i>10k requests</li>
                     <li><i class="fa-solid fa-check text-success me-2"></i>Basic support</li>
-                    <li><i class="fa-solid fa-check text-success me-2"></i>1 project</li>
                   </ul>
-                  <a href="https://t.me/Nottyboyy" target="_blank" class="btn btn-outline-light w-100">Buy Starter</a>
-                </div>
-              </div>
-              <div class="col">
-                <div class="card h-100 p-3 popular">
-                  <div class="d-flex align-items-center justify-content-between"><h5 class="mb-1">Pro</h5><span class="badge text-bg-warning">Popular</span></div>
-                  <div class="price">₹FREE<span class="fs-6 text-secondary"> / mo</span></div>
-                  <ul class="list-unstyled mt-3 mb-4 mini">
-                    <li><i class="fa-solid fa-check text-success me-2"></i>300k requests</li>
-                    <li><i class="fa-solid fa-check text-success me-2"></i>Priority support</li>
-                    <li><i class="fa-solid fa-check text-success me-2"></i>3 projects</li>
-                  </ul>
-                  <a href="https://t.me/Nottyboyy" target="_blank" class="btn btn-primary w-100">Buy Pro</a>
+                  <a href="https://t.me/Nottyboyy" target="_blank" class="btn btn-outline-light w-100">Get Free Key</a>
                 </div>
               </div>
               <div class="col">
                 <div class="card h-100 p-3">
-                  <h5 class="mb-1">Enterprise</h5>
-                  <div class="price">Custom</div>
-                  <ul class="list-unstyled mt-3 mb-4 mini">
-                    <li><i class="fa-solid fa-check text-success me-2"></i>Unlimited scale</li>
-                    <li><i class="fa-solid fa-check text-success me-2"></i>99.9% SLA</li>
-                    <li><i class="fa-solid fa-check text-success me-2"></i>Dedicated support</li>
+                  <h5 class="mb-1">Premium</h5>
+                  <div class="price">₹1</div>
+                  <ul class="list-unstyled mt-3 mb-4">
+                    <li><i class="fa-solid fa-check text-success me-2"></i>Unlimited requests</li>
+                    <li><i class="fa-solid fa-check text-success me-2"></i>Priority support</li>
                   </ul>
-                  <a href="https://t.me/Nottyboyy" target="_blank" class="btn btn-outline-light w-100">Talk to Sales</a>
+                  <a href="https://t.me/Nottyboyy" target="_blank" class="btn btn-primary w-100">Buy Premium</a>
                 </div>
               </div>
             </div>
@@ -147,119 +114,9 @@
         </div>
       </div>
     </div>
-  </section>  <!-- Features -->  <section class="py-5">
-    <div class="container">
-      <div class="row g-4">
-        <div class="col-lg-6">
-          <div class="card p-4 h-100">
-            <h3 class="mb-3"><i class="fa-solid fa-sparkles me-2 text-success"></i>Why choose us?</h3>
-            <div class="row row-cols-1 row-cols-md-2 g-3">
-              <div class="col feature"><i class="fa-solid fa-gauge-high"></i> Ultra‑low latency</div>
-              <div class="col feature"><i class="fa-solid fa-shield"></i> Key auth + rate limiting</div>
-              <div class="col feature"><i class="fa-solid fa-database"></i> Smart caching</div>
-              <div class="col feature"><i class="fa-solid fa-chart-line"></i> Usage analytics</div>
-              <div class="col feature"><i class="fa-solid fa-headset"></i> Priority support (Pro+)</div>
-              <div class="col feature"><i class="fa-solid fa-plug"></i> Simple REST endpoints</div>
-            </div>
-          </div>
-        </div>
-        <div class="col-lg-6" id="docs">
-          <div class="card p-4 h-100">
-            <h3 class="mb-3"><i class="fa-solid fa-book me-2 text-info"></i>Quick Start</h3>
-            <p class="mini">Use your key in the <code>Authorization</code> header:</p>
-            <pre class="mb-3"><code>// cURL
-curl -H "Authorization: Bearer YOUR_API_KEY" \
-  "https://api.yourdomain.com/v1/resource?query=hello"// JavaScript (fetch) const r = await fetch("https://api.yourdomain.com/v1/resource?query=hello", { headers: { Authorization: "Bearer YOUR_API_KEY" } }); const data = await r.json();
-
-// Python (httpx) import httpx r = httpx.get("https://api.yourdomain.com/v1/resource", params={"query":"hello"}, headers={"Authorization": "Bearer YOUR_API_KEY"}) print(r.json())</code></pre> <div class="d-flex gap-2"> <button class="btn btn-outline-light copy" data-copy="Authorization: Bearer YOUR_API_KEY"><i class="fa-regular fa-copy me-2"></i>Copy Auth Header</button> <a href="#buy" class="btn btn-primary"><i class="fa-brands fa-telegram me-2"></i>Get a Key</a> </div> </div> </div> </div> </div>
-
-  </section>  <!-- How it works -->  <section class="py-5 border-top border-dark">
-    <div class="container">
-      <h3 class="mb-4"><i class="fa-solid fa-diagram-project me-2 text-warning"></i>How it works</h3>
-      <div class="row g-4">
-        <div class="col-lg-4">
-          <div class="card p-4 step position-relative h-100">
-            <span class="dot"></span>
-            <h5>1) Ping us on Telegram</h5>
-            <p class="mini">Message <a href="https://t.me/Nottyboyy" target="_blank">@YourUsername</a> with your plan and email.</p>
-          </div>
-        </div>
-        <div class="col-lg-4">
-          <div class="card p-4 step position-relative h-100">
-            <span class="dot"></span>
-            <h5>2) Pay & receive key</h5>
-            <p class="mini">We verify payment and send your key + docs instantly.</p>
-          </div>
-        </div>
-        <div class="col-lg-4">
-          <div class="card p-4 step position-relative h-100">
-            <span class="dot"></span>
-            <h5>3) Build</h5>
-            <p class="mini">Drop your key in the header and start shipping.</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>  <!-- FAQ -->  <section class="py-5">
-    <div class="container">
-      <h3 class="mb-3"><i class="fa-solid fa-circle-question me-2 text-info"></i>FAQ</h3>
-      <div class="accordion faq" id="faq">
-        <div class="accordion-item bg-transparent border rounded-3 mb-2">
-          <h2 class="accordion-header">
-            <button class="accordion-button bg-transparent" type="button" data-bs-toggle="collapse" data-bs-target="#f1">How are requests counted?</button>
-          </h2>
-          <div id="f1" class="accordion-collapse collapse show" data-bs-parent="#faq">
-            <div class="accordion-body mini">Each successful HTTP 2xx/3xx response counts as one request. Retries may count depending on frequency to prevent abuse.</div>
-          </div>
-        </div>
-        <div class="accordion-item bg-transparent border rounded-3 mb-2">
-          <h2 class="accordion-header">
-            <button class="accordion-button collapsed bg-transparent" type="button" data-bs-toggle="collapse" data-bs-target="#f2">Do keys expire?</button>
-          </h2>
-          <div id="f2" class="accordion-collapse collapse" data-bs-parent="#faq">
-            <div class="accordion-body mini">Monthly plans renew every 30 days. You can pause or cancel anytime by messaging us on Telegram.</div>
-          </div>
-        </div>
-        <div class="accordion-item bg-transparent border rounded-3 mb-2">
-          <h2 class="accordion-header">
-            <button class="accordion-button collapsed bg-transparent" type="button" data-bs-toggle="collapse" data-bs-target="#f3">Refund policy?</button>
-          </h2>
-          <div id="f3" class="accordion-collapse collapse" data-bs-parent="#faq">
-            <div class="accordion-body mini">If the API is down for more than 24 consecutive hours, we credit time to your plan or offer a refund proportional to downtime.</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>  <!-- Footer -->  <footer class="py-4 border-top border-dark footer">
-    <div class="container d-flex flex-column flex-md-row align-items-center justify-content-between">
-      <div class="mini">© <span id="year"></span> SuperFast API. All rights reserved.</div>
-      <div class="mini">Status: <span class="badge text-bg-success">Healthy</span> • <a href="#buy" class="ms-2">Contact</a></div>
-    </div>
-  </footer>  <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1080">
-    <div id="toast" class="toast align-items-center border-0" role="alert" aria-live="assertive" aria-atomic="true">
-      <div class="d-flex">
-        <div class="toast-body"><i class="fa-solid fa-check me-2"></i>Copied to clipboard</div>
-        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-      </div>
-    </div>
-  </div>  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>  <script>
-    // Year
+  </section>  <footer class="py-4 text-center">
+    <p>© <span id="year"></span> SuperFast API. All rights reserved.</p>
+  </footer>  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>  <script>
     document.getElementById('year').textContent = new Date().getFullYear();
-
-    // Copy helpers
-    const toast = new bootstrap.Toast(document.getElementById('toast'));
-    function handleCopy(el){
-      const text = el.getAttribute('data-copy');
-      navigator.clipboard.writeText(text).then(()=>toast.show());
-    }
-    document.querySelectorAll('.copy').forEach(btn=>btn.addEventListener('click',()=>handleCopy(btn)));
-
-    // Optional: quick anchors open in new tab
-    document.querySelectorAll('a[target="_blank"]').forEach(a=>{
-      a.rel = 'noopener';
-    });
-
-    // Replace these via string find/replace or server templating if needed
-    // @YourUsername, t.me/YourChannel, t.me/YourSupportGroup
   </script></body>
-                </html>
+</html>
