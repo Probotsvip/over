@@ -120,15 +120,24 @@ class YouTubeService:
                             
                             def upload_in_background():
                                 try:
+                                    # More robust async handling
+                                    import asyncio
+                                    import sys
+                                    
+                                    if sys.platform == "win32":
+                                        asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
+                                    
                                     asyncio.run(telegram_service.upload_file_background(
                                         video_id, 
                                         stream_type, 
                                         video_data['url'], 
                                         video_data['title']
                                     ))
-                                    logger.info(f"Telegram upload completed for {video_id} ({stream_type})")
+                                    logger.info(f"✅ Telegram upload completed for {video_id} ({stream_type})")
                                 except Exception as e:
-                                    logger.error(f"Background Telegram upload failed: {e}")
+                                    logger.error(f"❌ Background Telegram upload failed for {video_id}: {e}")
+                                    import traceback
+                                    logger.error(f"Full traceback: {traceback.format_exc()}")
                             
                             # Start background thread
                             upload_thread = threading.Thread(target=upload_in_background, daemon=True)
