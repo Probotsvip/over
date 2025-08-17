@@ -456,6 +456,7 @@
         // Global variables
         let charts = {};
         const adminKey = '{{ admin_key }}';
+        window.adminKey = adminKey; // Make it available globally for external admin.js
         let refreshInterval;
         
         // Initialize everything when page loads

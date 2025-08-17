@@ -4,7 +4,7 @@ This is a Flask-based YouTube API service that provides high-performance YouTube
 
 The service is designed to be anti-bot protected and optimized for integration with Telegram bots (Pyrogram/Telethon), providing fast response times and reliable streaming capabilities.
 
-## Recent Changes (August 16, 2025)
+## Recent Changes (August 17, 2025)
 - ✅ Successfully migrated from Replit Agent to standard Replit environment
 - ✅ MongoDB Atlas connection fully operational with proper authentication (mongodb+srv://...)
 - ✅ Fixed API key validation with robust fallback system for MongoDB connection issues
@@ -17,10 +17,15 @@ The service is designed to be anti-bot protected and optimized for integration w
 - ✅ External API integration working (jerrycoder.oggyapi.workers.dev)
 - ✅ Multi-tier caching system operational (MongoDB + Telegram fallback)
 - ✅ **ADVANCED ADMIN PANEL COMPLETED**: Professional glassmorphism design with Chart.js integration
-- ✅ Real-time MongoDB Atlas data integration (38 requests, 4 API keys)
+- ✅ Real-time MongoDB Atlas data integration (38 requests, 5 API keys including new test key)
 - ✅ All admin endpoints functional: /admin/stats, /admin/logs, /admin/keys, /admin/create_key, /admin/delete_key
 - ✅ Interactive charts, live monitoring, auto-refresh, and comprehensive API key management
 - ✅ Admin authentication working with JAYDIP key, beautiful gradient UI effects
+- ✅ **MOBILE RECHARGE-STYLE API KEY SYSTEM**: Automatic expiry with configurable days (7-3650 days)
+- ✅ Enhanced API key lifecycle management with auto-expiry and daily limit reset functionality
+- ✅ Updated admin interface with Status & Expiry column showing remaining days
+- ✅ Backward compatibility maintained for both basic and unified admin templates
+- ✅ API key creation fully operational via backend (tested successfully via API calls)
 
 # User Preferences
 

@@ -111,7 +111,8 @@ async function createKey(event) {
     
     const name = document.getElementById('keyName').value.trim();
     const dailyLimit = parseInt(document.getElementById('dailyLimit').value);
-    const expiryDays = parseInt(document.getElementById('expiryDays').value);
+    const expiryDaysElement = document.getElementById('expiryDays');
+    const expiryDays = expiryDaysElement ? parseInt(expiryDaysElement.value) : 365; // Default to 365 days if field doesn't exist
     
     if (!name) {
         showError('Key name is required');
@@ -123,7 +124,7 @@ async function createKey(event) {
         return;
     }
     
-    if (expiryDays < 1 || expiryDays > 3650) {
+    if (expiryDaysElement && (expiryDays < 1 || expiryDays > 3650)) {
         showError('Expiry days must be between 1 and 3,650 (10 years)');
         return;
     }
