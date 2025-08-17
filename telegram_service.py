@@ -186,10 +186,19 @@ class TelegramService:
                 self.upload_file_background(video_id, stream_type, file_url, title)
             )
         except RuntimeError:
-            # No event loop running, create new one for background task
-            asyncio.create_task(
-                self.upload_file_background(video_id, stream_type, file_url, title)
-            )
+            # No event loop running, run in new thread
+            import threading
+            def run_upload():
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                loop.run_until_complete(
+                    self.upload_file_background(video_id, stream_type, file_url, title)
+                )
+                loop.close()
+            
+            thread = threading.Thread(target=run_upload)
+            thread.daemon = True
+            thread.start()
 
 # Global instance
 telegram_service = TelegramService()

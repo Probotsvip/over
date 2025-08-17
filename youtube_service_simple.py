@@ -54,9 +54,9 @@ class YouTubeService:
                         "title": f"Telegram Cached {stream_type.title()}"
                     }
                 else:
-                    logger.info(f"❌ NOT found in Telegram for {video_id} ({stream_type})")
+                    logger.info(f"NOT found in Telegram for {video_id} ({stream_type})")
             else:
-                logger.warning("❌ Telegram bot not configured - skipping Telegram check")
+                logger.info(f"Telegram bot status: token={bool(telegram_service.bot_token)}, channel={bool(telegram_service.channel_id)}, bot={bool(telegram_service.bot)}")
             
             # Step 2: Check MongoDB cache as fallback (not primary anymore)
             if videos_collection_sync is not None:
@@ -111,9 +111,9 @@ class YouTubeService:
                         except Exception as e:
                             logger.warning(f"Could not save to MongoDB: {e}")
                     
-                    # Step 5: 🚀 Upload to Telegram if bot is configured (YOUR IDEA!)
+                    # Step 5: Upload to Telegram if bot is configured (YOUR IDEA!)
                     if telegram_service.bot and video_data.get('url') and video_data.get('title'):
-                        logger.info(f"🚀 Starting Telegram upload for {video_id} ({stream_type}) as per your idea!")
+                        logger.info(f"Starting Telegram upload for {video_id} ({stream_type}) as per your idea!")
                         try:
                             # Create a new thread for async upload since Flask doesn't have event loop
                             import threading
@@ -126,18 +126,18 @@ class YouTubeService:
                                         video_data['url'], 
                                         video_data['title']
                                     ))
-                                    logger.info(f"✅ Telegram upload completed for {video_id} ({stream_type})")
+                                    logger.info(f"Telegram upload completed for {video_id} ({stream_type})")
                                 except Exception as e:
-                                    logger.error(f"❌ Background Telegram upload failed: {e}")
+                                    logger.error(f"Background Telegram upload failed: {e}")
                             
                             # Start background thread
                             upload_thread = threading.Thread(target=upload_in_background, daemon=True)
                             upload_thread.start()
-                            logger.info(f"🎯 Started Telegram upload thread for {video_id} ({stream_type}) - following your caching strategy!")
+                            logger.info(f"Started Telegram upload thread for {video_id} ({stream_type}) - following your caching strategy!")
                         except Exception as e:
                             logger.warning(f"Could not schedule Telegram upload: {e}")
                     else:
-                        logger.warning(f"❌ Telegram upload skipped for {video_id} ({stream_type}) - bot not configured")
+                        logger.info(f"Telegram upload skipped for {video_id} ({stream_type}) - Bot configured: {bool(telegram_service.bot)}, URL: {bool(video_data.get('url'))}, Title: {bool(video_data.get('title'))}")
                     
                     return video_data
                 else:
