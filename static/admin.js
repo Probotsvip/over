@@ -78,6 +78,16 @@ async function loadKeys() {
                         </span>
                     </td>
                     <td>
+                        ${key.status ? 
+                            `<span class="badge ${key.status === 'active' ? 'bg-success' : key.status === 'expired' ? 'bg-danger' : 'bg-warning'}">${key.status}</span>` :
+                            '<span class="badge bg-success">active</span>'
+                        }
+                        ${key.valid_until ? 
+                            `<br><small class="text-muted">${key.days_until_expiry || Math.max(0, Math.floor((new Date(key.valid_until) - new Date()) / (1000 * 60 * 60 * 24)))} days left</small>` :
+                            ''
+                        }
+                    </td>
+                    <td>
                         ${isAdmin ? 
                             '<span class="text-muted small">Protected</span>' : 
                             `<button class="btn btn-sm btn-outline-danger" onclick="deleteKey('${keyId}', '${keyName}')">
@@ -88,7 +98,7 @@ async function loadKeys() {
                 </tr>`;
             }).join('');
         } else {
-            keysTable.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No API keys found</td></tr>';
+            keysTable.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No API keys found</td></tr>';
         }
     } catch (error) {
         console.error('Error loading keys:', error);
@@ -101,6 +111,7 @@ async function createKey(event) {
     
     const name = document.getElementById('keyName').value.trim();
     const dailyLimit = parseInt(document.getElementById('dailyLimit').value);
+    const expiryDays = parseInt(document.getElementById('expiryDays').value);
     
     if (!name) {
         showError('Key name is required');
@@ -109,6 +120,11 @@ async function createKey(event) {
     
     if (dailyLimit < 1 || dailyLimit > 10000) {
         showError('Daily limit must be between 1 and 10,000');
+        return;
+    }
+    
+    if (expiryDays < 1 || expiryDays > 3650) {
+        showError('Expiry days must be between 1 and 3,650 (10 years)');
         return;
     }
     
@@ -123,7 +139,8 @@ async function createKey(event) {
             method: 'POST',
             body: JSON.stringify({
                 name: name,
-                daily_limit: dailyLimit
+                daily_limit: dailyLimit,
+                expiry_days: expiryDays
             })
         });
         
@@ -134,6 +151,9 @@ async function createKey(event) {
         // Reset form
         document.getElementById('createKeyForm').reset();
         document.getElementById('dailyLimit').value = '100';
+        if (document.getElementById('expiryDays')) {
+            document.getElementById('expiryDays').value = '365';
+        }
         
         // Reload keys
         await loadKeys();

@@ -109,7 +109,31 @@ def validate_api_key(api_key: str) -> Optional[APIKey]:
                 
                 api_key_obj = APIKey.from_dict(key_doc)
                 
-                # Check if expired
+                # Auto-expire if needed
+                if api_key_obj.auto_expire_if_needed():
+                    try:
+                        api_keys_collection_sync.update_one(
+                            {"key": api_key},
+                            {"$set": {"status": "expired"}}
+                        )
+                    except Exception as e:
+                        logger.error(f"Error updating expired status: {e}")
+                    return None
+                
+                # Auto-reset daily requests at midnight
+                if api_key_obj.auto_reset_if_needed():
+                    try:
+                        api_keys_collection_sync.update_one(
+                            {"key": api_key},
+                            {"$set": {
+                                "daily_requests": 0,
+                                "reset_at": api_key_obj.reset_at
+                            }}
+                        )
+                    except Exception as e:
+                        logger.error(f"Error updating reset status: {e}")
+                
+                # Check if expired after auto-check
                 if api_key_obj.is_expired():
                     return None
                 
@@ -117,7 +141,7 @@ def validate_api_key(api_key: str) -> Optional[APIKey]:
                 if api_key_obj.remaining_requests() <= 0:
                     return None
                 
-                # Reset count if needed
+                # Legacy support for old count field
                 if datetime.now() > api_key_obj.reset_at:
                     api_key_obj.count = 0
                     api_key_obj.reset_at = datetime.now() + timedelta(days=1)
@@ -181,16 +205,20 @@ def require_api_key(f):
         if not api_key_obj:
             return jsonify({"error": "Invalid or expired API key"}), 401
         
-        # Increment usage count
+        # Increment usage count with new method
         if api_keys_collection_sync is not None:
             api_keys_collection_sync.update_one(
                 {"key": api_key},
-                {"$inc": {"count": 1}}
+                {"$inc": {
+                    "count": 1,
+                    "daily_requests": 1,
+                    "total_requests": 1
+                }}
             )
         else:
             # Update fallback storage
             if api_key in fallback_api_keys:
-                fallback_api_keys[api_key].count += 1
+                fallback_api_keys[api_key].increment_requests()
         
         # Log API usage
         if logs_collection_sync is not None:
@@ -424,9 +452,13 @@ def create_api_key():
         data = request.get_json()
         name = data.get('name')
         daily_limit = data.get('daily_limit', 100)
+        expiry_days = data.get('expiry_days', 365)
         
         if not name:
             return jsonify({"error": "Name is required"}), 400
+        
+        if expiry_days < 1 or expiry_days > 3650:  # Max 10 years
+            return jsonify({"error": "Expiry days must be between 1 and 3650"}), 400
         
         # Generate new API key
         new_key = secrets.token_hex(32)
@@ -438,6 +470,7 @@ def create_api_key():
             key=new_key,
             name=name,
             daily_limit=daily_limit,
+            expiry_days=expiry_days,
             created_by=admin_key
         )
         
@@ -446,7 +479,14 @@ def create_api_key():
         else:
             fallback_api_keys[new_key] = api_key
         
-        return jsonify({"key": new_key, "name": name, "daily_limit": daily_limit})
+        return jsonify({
+            "key": new_key, 
+            "name": name, 
+            "daily_limit": daily_limit,
+            "expiry_days": expiry_days,
+            "valid_until": api_key.valid_until.isoformat(),
+            "status": "active"
+        })
         
     except Exception as e:
         logger.error(f"Error creating API key: {e}")
@@ -497,6 +537,54 @@ def get_stats():
     except Exception as e:
         logger.error(f"Error getting stats: {e}")
         return jsonify({"error": "Internal server error"}), 500
+
+@app.route('/api/admin/maintenance', methods=['POST'])
+@require_admin_key
+def run_maintenance():
+    """Run maintenance tasks - auto-expire keys and reset daily counters"""
+    try:
+        expired_count = 0
+        reset_count = 0
+        
+        if api_keys_collection_sync is not None:
+            # Find all keys
+            all_keys = api_keys_collection_sync.find({})
+            
+            for key_doc in all_keys:
+                api_key_obj = APIKey.from_dict(key_doc)
+                updated = False
+                
+                # Check and auto-expire
+                if api_key_obj.auto_expire_if_needed():
+                    api_keys_collection_sync.update_one(
+                        {"key": api_key_obj.key},
+                        {"$set": {"status": "expired"}}
+                    )
+                    expired_count += 1
+                    updated = True
+                
+                # Check and auto-reset daily counters
+                if api_key_obj.auto_reset_if_needed():
+                    api_keys_collection_sync.update_one(
+                        {"key": api_key_obj.key},
+                        {"$set": {
+                            "daily_requests": 0,
+                            "reset_at": api_key_obj.reset_at
+                        }}
+                    )
+                    reset_count += 1
+                    updated = True
+        
+        return jsonify({
+            "status": "success",
+            "expired_keys": expired_count,
+            "reset_counters": reset_count,
+            "timestamp": datetime.now().isoformat()
+        })
+        
+    except Exception as e:
+        logger.error(f"Error in maintenance: {e}")
+        return jsonify({"error": "Maintenance failed"}), 500
 
 @app.route('/health')
 def health_check():

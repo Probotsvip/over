@@ -6,16 +6,23 @@ logger = logging.getLogger(__name__)
 
 class APIKey:
     def __init__(self, key: str, name: str, is_admin: bool = False, 
-                 daily_limit: int = 100, created_by: Optional[str] = None):
+                 daily_limit: int = 100, created_by: Optional[str] = None, 
+                 expiry_days: int = 365):
         self.key = key
         self.name = name
         self.is_admin = is_admin
         self.created_at = datetime.now()
-        self.valid_until = datetime.now() + timedelta(days=365)
+        self.expiry_days = expiry_days
+        self.valid_until = datetime.now() + timedelta(days=expiry_days)
         self.daily_limit = daily_limit
-        self.reset_at = datetime.now() + timedelta(days=1)
+        # Reset at midnight
+        tomorrow = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1)
+        self.reset_at = tomorrow
         self.count = 0
+        self.daily_requests = 0  # Current day requests
+        self.total_requests = 0  # All time requests
         self.created_by = created_by
+        self.status = "active"  # active, expired, suspended
     
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -23,11 +30,15 @@ class APIKey:
             "name": self.name,
             "is_admin": self.is_admin,
             "created_at": self.created_at,
+            "expiry_days": self.expiry_days,
             "valid_until": self.valid_until,
             "daily_limit": self.daily_limit,
             "reset_at": self.reset_at,
             "count": self.count,
-            "created_by": self.created_by
+            "daily_requests": self.daily_requests,
+            "total_requests": self.total_requests,
+            "created_by": self.created_by,
+            "status": self.status
         }
     
     @classmethod
@@ -37,21 +48,53 @@ class APIKey:
             name=data["name"],
             is_admin=data.get("is_admin", False),
             daily_limit=data.get("daily_limit", 100),
-            created_by=data.get("created_by")
+            created_by=data.get("created_by"),
+            expiry_days=data.get("expiry_days", 365)
         )
         api_key.created_at = data.get("created_at", datetime.now())
         api_key.valid_until = data.get("valid_until", datetime.now() + timedelta(days=365))
-        api_key.reset_at = data.get("reset_at", datetime.now() + timedelta(days=1))
+        tomorrow = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1)
+        api_key.reset_at = data.get("reset_at", tomorrow)
         api_key.count = data.get("count", 0)
+        api_key.daily_requests = data.get("daily_requests", 0)
+        api_key.total_requests = data.get("total_requests", 0)
+        api_key.status = data.get("status", "active")
         return api_key
     
     def is_expired(self) -> bool:
-        return datetime.now() > self.valid_until
+        return datetime.now() > self.valid_until or self.status == "expired"
     
     def remaining_requests(self) -> int:
         if datetime.now() > self.reset_at:
             return self.daily_limit
-        return max(0, self.daily_limit - self.count)
+        return max(0, self.daily_limit - self.daily_requests)
+    
+    def auto_reset_if_needed(self) -> bool:
+        """Reset daily requests if past midnight. Returns True if reset occurred."""
+        if datetime.now() > self.reset_at:
+            self.daily_requests = 0
+            tomorrow = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1)
+            self.reset_at = tomorrow
+            return True
+        return False
+    
+    def increment_requests(self) -> None:
+        """Increment both daily and total request counters"""
+        self.daily_requests += 1
+        self.total_requests += 1
+        self.count = self.daily_requests  # Keep backward compatibility
+    
+    def days_until_expiry(self) -> int:
+        """Get days remaining until expiry"""
+        delta = self.valid_until - datetime.now()
+        return max(0, delta.days)
+    
+    def auto_expire_if_needed(self) -> bool:
+        """Auto-expire key if past expiry date. Returns True if expired."""
+        if self.is_expired() and self.status != "expired":
+            self.status = "expired"
+            return True
+        return False
 
 class VideoInfo:
     def __init__(self, video_id: str, title: str, duration: str, 
