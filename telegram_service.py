@@ -98,7 +98,7 @@ class TelegramService:
                 telegram_file = TelegramFile.from_dict(file_doc)
                 # Verify file still exists in Telegram
                 try:
-                    file_info = await self.bot.get_file(file_id=telegram_file.file_id)
+                    file_info = await self.bot.get_file(telegram_file.file_id)
                     
                     if file_info:
                         return f"https://api.telegram.org/file/bot{self.bot_token}/{file_info.file_path}"
