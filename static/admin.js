@@ -1,6 +1,12 @@
 async function makeRequest(endpoint, options = {}) {
+    if (!window.adminKey) {
+        throw new Error('Admin key not available');
+    }
+    
     const url = new URL(endpoint, window.location.origin);
     url.searchParams.append('admin_key', window.adminKey);
+    
+    console.log('Making request to:', url.toString());
     
     const response = await fetch(url, {
         headers: {
@@ -10,8 +16,12 @@ async function makeRequest(endpoint, options = {}) {
         ...options
     });
     
+    console.log('Response status:', response.status);
+    
     if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        const errorText = await response.text();
+        console.error('API Error:', errorText);
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
     }
     
     return response.json();
@@ -165,6 +175,10 @@ async function createKey(event) {
     } catch (error) {
         console.error('Error creating key:', error);
         showError('Failed to create API key: ' + error.message);
+        
+        // Re-enable form
+        createBtn.disabled = false;
+        createBtn.innerHTML = '<i class="fas fa-plus"></i> Create Key';
     } finally {
         submitBtn.disabled = false;
         submitBtn.innerHTML = originalText;
@@ -276,7 +290,22 @@ function showToast(message, type = 'info') {
 
 // Event listeners
 document.addEventListener('DOMContentLoaded', function() {
-    document.getElementById('createKeyForm').addEventListener('submit', createKey);
+    // Ensure adminKey is available
+    if (!window.adminKey) {
+        // Try to get from URL if not set by the page
+        const urlParams = new URLSearchParams(window.location.search);
+        window.adminKey = urlParams.get('admin_key');
+        
+        if (!window.adminKey) {
+            showError('Admin key not found. Please access the admin panel with proper credentials.');
+            return;
+        }
+    }
+    
+    const form = document.getElementById('createKeyForm');
+    if (form) {
+        form.addEventListener('submit', createKey);
+    }
 });
 
 // Auto-refresh functionality
