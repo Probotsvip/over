@@ -149,6 +149,7 @@ async function createKey(event) {
         const result = await makeRequest('/api/admin/keys', {
             method: 'POST',
             body: JSON.stringify({
+                admin_key: window.adminKey,
                 name: name,
                 daily_limit: dailyLimit,
                 expiry_days: expiryDays

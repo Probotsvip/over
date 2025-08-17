@@ -241,7 +241,10 @@ def require_admin_key(f):
     """Decorator to require admin API key"""
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        api_key = request.args.get('admin_key') or request.headers.get('X-Admin-Key')
+        # Try multiple sources for admin key
+        api_key = (request.args.get('admin_key') or 
+                  request.headers.get('X-Admin-Key') or
+                  (request.get_json() or {}).get('admin_key'))
         
         if not api_key:
             return jsonify({"error": "Admin key required"}), 401
