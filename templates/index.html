@@ -1,121 +1,155 @@
 <!DOCTYPE html><html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>SuperFast API – Buy API Keys Instantly</title>
-  <meta name="description" content="Simple, fast API key sales page. Buy keys via Telegram and start calling the API in minutes."/>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SuperFast YouTube API</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
   <style>
     body {
-      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-      color: #e2e8f0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+      color: #f1f5f9;
+      overflow-x: hidden;
     }
-    .card {
-      background: rgba(18, 24, 34, 0.9);
-      border: none;
-      border-radius: 1.5rem;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      position: relative;
+      background: radial-gradient(circle at top left,#667eea33,#764ba233 50%,transparent 100%),radial-gradient(circle at bottom right,#06b6d433,#3b82f633 50%,transparent 100%);
     }
-    .card:hover {
-      transform: translateY(-10px) scale(1.03);
-      box-shadow: 0 15px 40px rgba(0,0,0,0.7);
+    .hero h1 {
+      font-size: clamp(2.5rem,6vw,4.5rem);
+      font-weight: 900;
+      background: linear-gradient(135deg,#4facfe,#00f2fe);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 5px 20px rgba(0,0,0,0.6);
+      animation: glow 3s infinite alternate;
     }
-    .btn-primary {
-      background: linear-gradient(45deg, #06b6d4, #3b82f6);
+    @keyframes glow {
+      from { text-shadow: 0 0 10px #22d3ee; }
+      to { text-shadow: 0 0 25px #a78bfa; }
+    }
+    .btn-glow {
+      background: linear-gradient(45deg,#06b6d4,#3b82f6);
       border: none;
       border-radius: 50px;
-      box-shadow: 0 5px 15px rgba(59,130,246,0.4);
+      padding: 0.8rem 2rem;
+      font-weight: 600;
+      color: #fff;
+      box-shadow: 0 0 20px rgba(59,130,246,0.6);
+      transition: all 0.3s ease;
     }
-    .btn-primary:hover {
-      background: linear-gradient(45deg, #3b82f6, #06b6d4);
+    .btn-glow:hover {
+      transform: scale(1.05) translateY(-2px);
+      box-shadow: 0 0 35px rgba(59,130,246,0.8);
+      color: #fff;
     }
-    .hero-title {
-      font-size: clamp(2rem, 4vw, 3.5rem);
-      font-weight: 900;
-      text-shadow: 0 3px 10px rgba(0,0,0,0.6);
+    .section-title {
+      font-size: 2.5rem;
+      font-weight: 800;
+      background: linear-gradient(90deg,#22d3ee,#a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+    .card-3d {
+      background: rgba(255,255,255,0.06);
+      backdrop-filter: blur(20px);
+      border-radius: 20px;
+      padding: 2rem;
+      transition: all .3s ease;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+    }
+    .card-3d:hover {
+      transform: translateY(-10px) scale(1.03);
+      box-shadow: 0 25px 50px rgba(0,0,0,0.5);
     }
     .price {
-      font-size: 2rem;
-      font-weight: 700;
-      background: linear-gradient(90deg, #22d3ee, #a78bfa);
+      font-size: 3rem;
+      font-weight: 900;
+      background: linear-gradient(90deg,#4facfe,#00f2fe);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
-    .badge-soft {
-      background: rgba(34,211,238,.15);
-      color: #22d3ee;
-    }
-    .glow {
-      box-shadow: 0 10px 30px rgba(34,211,238,.25);
+    footer {
+      background: rgba(0,0,0,0.8);
+      padding: 2rem;
+      text-align: center;
+      font-size: 0.9rem;
+      color: #94a3b8;
     }
   </style>
 </head>
 <body>
-  <nav class="navbar navbar-expand-lg navbar-dark sticky-top blur-bg border-bottom border-dark">
+  <section class="hero">
     <div class="container">
-      <a class="navbar-brand fw-bold" href="#"><i class="fa-solid fa-bolt me-2 text-info"></i>SuperFast API</a>
-      <div class="ms-auto d-flex gap-2">
-        <a class="btn btn-outline-light btn-sm" href="#pricing"><i class="fa-solid fa-tags me-1"></i> Pricing</a>
-        <a class="btn btn-primary btn-sm" href="#buy"><i class="fa-brands fa-telegram me-1"></i> Buy via Telegram</a>
-      </div>
+      <h1>⚡ SuperFast YouTube API</h1>
+      <p class="lead mb-4">Secure · Reliable · Ultra-fast Video & Audio Retrieval</p>
+      <a href="https://t.me/Nottyboyy" target="_blank" class="btn-glow"><i class="fab fa-telegram me-2"></i>Get Your API Key</a>
     </div>
-  </nav>  <header class="py-5">
-    <div class="container text-center">
-      <h1 class="hero-title mb-3">Attractive 3D API Key Store</h1>
-      <p class="lead">Get your API key instantly via Telegram with just one click.</p>
-      <a href="#buy" class="btn btn-primary btn-lg glow"><i class="fa-brands fa-telegram me-2"></i>Buy API Key</a>
-    </div>
-  </header>  <section id="buy" class="py-5">
+  </section>  <section id="features" class="py-5">
     <div class="container">
-      <div class="row g-4 align-items-stretch">
-        <div class="col-lg-5">
-          <div class="card h-100 p-4 text-center">
-            <h3 class="mb-3"><i class="fa-brands fa-telegram me-2 text-info"></i>Buy & Support</h3>
-            <p class="mb-2"><i class="fa-solid fa-user me-2"></i><strong>Seller DM:</strong> <a href="https://t.me/Nottyboyy" target="_blank">@Nottyboyy</a></p>
-            <p class="mb-2"><i class="fa-solid fa-bullhorn me-2"></i><strong>Support Channel:</strong> <a href="https://t.me/KOMALMUSICUPDATE" target="_blank">@KOMALMUSICUPDATE</a></p>
-            <p class="mb-3"><i class="fa-solid fa-users me-2"></i><strong>Support Group:</strong> <a href="https://t.me/Komal_Music_Support" target="_blank">t.me/Komal_Music_Support</a></p>
-            <div class="d-flex gap-2 justify-content-center">
-              <a class="btn btn-primary" href="https://t.me/Nottyboyy" target="_blank"><i class="fa-brands fa-telegram me-2"></i>Message Seller</a>
-              <a class="btn btn-outline-light" href="https://t.me/Komal_Music_Support" target="_blank"><i class="fa-solid fa-life-ring me-2"></i>Get Help</a>
-            </div>
+      <h2 class="section-title">🚀 Key Features</h2>
+      <div class="row g-4">
+        <div class="col-md-4">
+          <div class="card-3d text-center">
+            <i class="fas fa-bolt fa-2x mb-3 text-info"></i>
+            <h5 class="fw-bold">Ultra Fast</h5>
+            <p>Milliseconds response time for seamless experience.</p>
           </div>
         </div>
-        <div class="col-lg-7">
-          <div class="card h-100 p-4 text-center">
-            <h3 class="mb-3"><i class="fa-solid fa-tags me-2 text-warning"></i>Plans</h3>
-            <div class="row row-cols-1 row-cols-md-2 g-3" id="pricing">
-              <div class="col">
-                <div class="card h-100 p-3">
-                  <h5 class="mb-1">Free</h5>
-                  <div class="price">₹0</div>
-                  <ul class="list-unstyled mt-3 mb-4">
-                    <li><i class="fa-solid fa-check text-success me-2"></i>10k requests</li>
-                    <li><i class="fa-solid fa-check text-success me-2"></i>Basic support</li>
-                  </ul>
-                  <a href="https://t.me/Nottyboyy" target="_blank" class="btn btn-outline-light w-100">Get Free Key</a>
-                </div>
-              </div>
-              <div class="col">
-                <div class="card h-100 p-3">
-                  <h5 class="mb-1">Premium</h5>
-                  <div class="price">₹1</div>
-                  <ul class="list-unstyled mt-3 mb-4">
-                    <li><i class="fa-solid fa-check text-success me-2"></i>Unlimited requests</li>
-                    <li><i class="fa-solid fa-check text-success me-2"></i>Priority support</li>
-                  </ul>
-                  <a href="https://t.me/Nottyboyy" target="_blank" class="btn btn-primary w-100">Buy Premium</a>
-                </div>
-              </div>
-            </div>
+        <div class="col-md-4">
+          <div class="card-3d text-center">
+            <i class="fas fa-shield-alt fa-2x mb-3 text-success"></i>
+            <h5 class="fw-bold">Secure</h5>
+            <p>API key authentication with built-in protection.</p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card-3d text-center">
+            <i class="fas fa-music fa-2x mb-3 text-warning"></i>
+            <h5 class="fw-bold">Video & Audio</h5>
+            <p>High quality MP4 & MP3 support.</p>
           </div>
         </div>
       </div>
     </div>
-  </section>  <footer class="py-4 text-center">
-    <p>© <span id="year"></span> SuperFast API. All rights reserved.</p>
+  </section>  <section id="pricing" class="py-5">
+    <div class="container">
+      <h2 class="section-title">💰 Pricing</h2>
+      <div class="row g-4 justify-content-center">
+        <div class="col-md-5">
+          <div class="card-3d text-center">
+            <h4>Free Plan</h4>
+            <div class="price">₹0</div>
+            <p>10k Requests · Basic Support</p>
+            <a href="https://t.me/Nottyboyy" target="_blank" class="btn btn-outline-light w-100">Get Free Key</a>
+          </div>
+        </div>
+        <div class="col-md-5">
+          <div class="card-3d text-center">
+            <h4>Premium Plan</h4>
+            <div class="price">₹1</div>
+            <p>Unlimited Requests · Priority Support</p>
+            <a href="https://t.me/Nottyboyy" target="_blank" class="btn-glow w-100">Buy Premium</a>
+          </div>
+        </div>
+      </div>
+      <div class="text-center mt-4">
+        <p><i class="fas fa-bullhorn me-2"></i> Updates: <a href="https://t.me/KOMALMUSICUPDATE" target="_blank">@KOMALMUSICUPDATE</a></p>
+        <p><i class="fas fa-users me-2"></i> Support Group: <a href="https://t.me/Komal_Music_Support" target="_blank">t.me/Komal_Music_Support</a></p>
+      </div>
+    </div>
+  </section>  <footer>
+    <p>© <span id="year"></span> SuperFast YouTube API. All Rights Reserved.</p>
   </footer>  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>  <script>
     document.getElementById('year').textContent = new Date().getFullYear();
   </script></body>
